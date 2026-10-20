@@ -685,7 +685,7 @@
       </p>
       <div class="modal-actions">
         <button class="secondary-btn" id="cancelExit" type="button">取消，继续游戏</button>
-        <button class="primary-btn danger-btn" id="confirmExit" type="button">确认返回</button>
+        <button class="primary-btn danger-btn" id="confirmExit" type="button">确认返回大厅</button>
       </div>
     </div>
   </div>
@@ -743,10 +743,6 @@
 
       const SONG_LENGTH = 90;
 
-      /*
-       * 这是用于测试玩法的示例音符时间轴，不是《She So Bad》的真实谱面。
-       * 获得授权音乐后，请根据具体音源的 BPM、节拍和起始偏移重新制作谱面。
-       */
       const demoBeatmap = [];
       for (let bar = 0; bar < 45; bar++) {
         const base = 1.0 + bar * 1.6;
@@ -1119,12 +1115,14 @@
         showOverlay("result");
       }
 
+      // 请求返回大厅确认弹窗
       function requestExit() {
         stopMedia();
         cancelAnimationFrame(animationId);
         showOverlay("exit");
       }
 
+      // 确认返回大厅：跳转到 games.html
       function confirmExit() {
         leaving = true;
         finished = true;
@@ -1139,7 +1137,8 @@
         } catch {}
 
         clearNotes();
-        window.location.href = "../../games.html";
+        // 跳转到大厅 games.html
+        window.location.href = "games.html";
       }
 
       function openSettings() {
@@ -1165,6 +1164,24 @@
           hideOverlays();
         }
       }
+
+      /* ------------------------------------------------------------------
+       * 手机物理返回键 / 手势侧滑返回 拦截逻辑
+       * ------------------------------------------------------------------ */
+      function pushHistoryState() {
+        // 向浏览器历史记录推入一条虚状态，用于拦截返回操作
+        history.pushState({ inGame: true }, "", window.location.href);
+      }
+
+      pushHistoryState();
+
+      window.addEventListener("popstate", () => {
+        if (leaving) return;
+        // 重新注入历史记录，防止二次连按直接跳出
+        pushHistoryState();
+        // 弹出返回大厅的二次确认弹窗
+        requestExit();
+      });
 
       // 事件绑定
       $("acceptNotice").addEventListener("click", () => {
@@ -1215,6 +1232,7 @@
       $("pauseExitBtn").addEventListener("click", requestExit);
       $("resultExit").addEventListener("click", requestExit);
 
+      // 取消返回大厅
       $("cancelExit").addEventListener("click", () => {
         if (gameStarted && !finished) {
           showOverlay("pause");
@@ -1225,10 +1243,11 @@
         }
       });
 
+      // 确认返回大厅
       $("confirmExit").addEventListener("click", confirmExit);
       $("resultRetry").addEventListener("click", restartGame);
 
-      // 移动端点击事件
+      // 移动端点击四轨
       laneButtons.forEach(button => {
         button.addEventListener("pointerdown", event => {
           event.preventDefault();
@@ -1236,7 +1255,7 @@
         });
       });
 
-      // 键盘按键事件
+      // 键盘控制（电脑端）
       document.addEventListener("keydown", event => {
         if (event.repeat) return;
         const key = event.key.toLowerCase();
@@ -1296,7 +1315,6 @@
         video.pause();
       });
 
-      // 运行期间定时校正音画同步
       setInterval(() => {
         if (gameStarted && !paused && !finished && !leaving) {
           syncVideo();
@@ -1306,7 +1324,6 @@
       updateStats();
       updateProgress();
 
-      // 容错处理
       video.addEventListener("error", () => {
         video.style.display = "none";
       });
