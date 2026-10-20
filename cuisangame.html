@@ -8,7 +8,7 @@
   <meta name="category" content="arcade">
   <meta name="icon" content="🎵">
   <meta name="theme-color" content="#090510">
-  
+
   <style>
     :root {
       --bg: #090510;
@@ -63,7 +63,7 @@
       inset: 0;
       pointer-events: none;
       opacity: .32;
-      background-image: 
+      background-image:
         linear-gradient(rgba(189, 104, 255, .08) 1px, transparent 1px),
         linear-gradient(90deg, rgba(189, 104, 255, .08) 1px, transparent 1px);
       background-size: 38px 38px;
@@ -535,7 +535,6 @@
   <div id="app">
     <div class="ambient"></div>
 
-    <!-- 顶栏 -->
     <header>
       <div class="brand">SAN RHYTHM</div>
       <div class="header-actions">
@@ -548,7 +547,6 @@
       电脑操作：D F J K 击打对应轨道 · ESC 暂停
     </div>
 
-    <!-- 数据显示 -->
     <section class="stats" aria-label="游戏统计">
       <div class="stat">
         <div class="stat-label">SCORE</div>
@@ -568,14 +566,13 @@
       </div>
     </section>
 
-    <!-- 游戏舞台 -->
     <main class="game-area">
       <div id="stage">
         <video id="videoBackground" playsinline preload="metadata">
-          <source src="assets/san-dance.mp4" type="video/mp4">
+          <source src="san-dance.mp4" type="video/mp4">
         </video>
         <div id="videoShade"></div>
-        
+
         <div class="lanes" id="lanes">
           <div class="lane" data-lane="0"></div>
           <div class="lane" data-lane="1"></div>
@@ -600,7 +597,6 @@
       </div>
     </main>
 
-    <!-- 底部控制条 -->
     <section class="bottom-bar">
       <div class="track-info">
         <span id="songLabel">SHE SO BAD · RHYTHM CHALLENGE</span>
@@ -615,10 +611,9 @@
   </div>
 
   <audio id="music" preload="metadata">
-    <source src="assets/she-so-bad.mp3" type="audio/mpeg">
+    <source src="she-so-bad.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- 首次进入游戏须知 -->
   <div class="overlay show" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
     <div class="modal">
       <h2 id="noticeTitle">🎵 游戏须知</h2>
@@ -640,7 +635,6 @@
     </div>
   </div>
 
-  <!-- 暂停菜单 -->
   <div class="overlay" id="pauseModal" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
     <div class="modal">
       <h2 id="pauseTitle">Ⅱ 游戏已暂停</h2>
@@ -654,7 +648,6 @@
     </div>
   </div>
 
-  <!-- 音乐设置 -->
   <div class="overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
     <div class="modal">
       <h2 id="settingsTitle">⚙ 音乐设置</h2>
@@ -666,7 +659,7 @@
         <span>音乐音量</span>
         <input type="range" id="volume" min="0" max="100" value="65">
       </label>
-      <p>音乐文件：assets/she-so-bad.mp3</p>
+      <p>音乐文件：she-so-bad.mp3</p>
       <p>如果素材尚未添加，游戏仍可进入，但不会有真实歌曲播放。</p>
       <div class="modal-actions">
         <button class="primary-btn" id="saveSettings" type="button">保存设置</button>
@@ -675,7 +668,6 @@
     </div>
   </div>
 
-  <!-- 返回大厅二次确认 -->
   <div class="overlay" id="exitModal" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
     <div class="modal">
       <h2 id="exitTitle">要返回游戏大厅吗？</h2>
@@ -690,7 +682,6 @@
     </div>
   </div>
 
-  <!-- 结算 -->
   <div class="overlay" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
     <div class="modal">
       <h2 id="resultTitle">🏆 挑战完成！</h2>
@@ -1165,11 +1156,8 @@
         }
       }
 
-      /* ------------------------------------------------------------------
-       * 手机物理返回键 / 手势侧滑返回 拦截逻辑
-       * ------------------------------------------------------------------ */
+      /* 手机物理返回键 / 手势侧滑返回拦截 */
       function pushHistoryState() {
-        // 向浏览器历史记录推入一条虚状态，用于拦截返回操作
         history.pushState({ inGame: true }, "", window.location.href);
       }
 
@@ -1177,9 +1165,7 @@
 
       window.addEventListener("popstate", () => {
         if (leaving) return;
-        // 重新注入历史记录，防止二次连按直接跳出
         pushHistoryState();
-        // 弹出返回大厅的二次确认弹窗
         requestExit();
       });
 
@@ -1232,7 +1218,6 @@
       $("pauseExitBtn").addEventListener("click", requestExit);
       $("resultExit").addEventListener("click", requestExit);
 
-      // 取消返回大厅
       $("cancelExit").addEventListener("click", () => {
         if (gameStarted && !finished) {
           showOverlay("pause");
@@ -1243,7 +1228,6 @@
         }
       });
 
-      // 确认返回大厅
       $("confirmExit").addEventListener("click", confirmExit);
       $("resultRetry").addEventListener("click", restartGame);
 
