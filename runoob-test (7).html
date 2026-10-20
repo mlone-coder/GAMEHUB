@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- 禁止双击放大与异常手势缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#070b1b">
+    <meta name="description" content="GAME HUB - 探索游戏，挑战极限，享受乐趣。">
+    <title>GAME HUB - 游戏中心</title>
+    <style>
+        :root {
+            --bg: #070b1b;
+            --purple: #7658ee;
+            --blue: #3879ed;
+            --text: #ffffff;
+            --muted: #a4abc9;
+            --icon-color: #c3e5ff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+        
+        button {
+            font: inherit;
+            touch-action: manipulation;
+        }
+        
+        /* 动态科技背景与真渐变游动光球 */
+        .background {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: #060918;
+            overflow: hidden;
+        }
+        
+        .background::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(#ffffff0a 1px, transparent 1px),
+                linear-gradient(90deg, #ffffff0a 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(ellipse at 50% 50%, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at 50% 50%, black 40%, transparent 80%);
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.65;
+            pointer-events: none;
+            will-change: transform, filter;
+            transition: opacity 0.5s ease;
+        }
+        
+        /* 第一颗球：紫电流光 */
+        .orb-1 {
+            width: min(520px, 85vw);
+            height: min(520px, 85vw);
+            top: 5%;
+            left: 8%;
+            background: radial-gradient(circle, #5b3be6 0%, #3a2296 55%, transparent 75%);
+            animation: orbMove1 14s ease-in-out infinite alternate;
+        }
+        
+        /* 第二颗球：蔚蓝深流 */
+        .orb-2 {
+            width: min(580px, 92vw);
+            height: min(580px, 92vw);
+            bottom: 5%;
+            right: 8%;
+            background: radial-gradient(circle, #0082fb 0%, #004d9e 55%, transparent 75%);
+            animation: orbMove2 16s ease-in-out infinite alternate;
+        }
+        
+        @keyframes orbMove1 {
+            0% {
+                transform: translate(0, 0) scale(1);
+                filter: blur(85px) hue-rotate(0deg);
+            }
+            50% {
+                transform: translate(110px, 85px) scale(1.18);
+                filter: blur(95px) hue-rotate(32deg);
+            }
+            100% {
+                transform: translate(50px, 160px) scale(0.92);
+                filter: blur(80px) hue-rotate(-22deg);
+            }
+        }
+        
+        @keyframes orbMove2 {
+            0% {
+                transform: translate(0, 0) scale(1);
+                filter: blur(85px) hue-rotate(0deg);
+            }
+            50% {
+                transform: translate(-130px, -95px) scale(1.15);
+                filter: blur(95px) hue-rotate(28deg);
+            }
+            100% {
+                transform: translate(-70px, -170px) scale(0.92);
+                filter: blur(80px) hue-rotate(-24deg);
+            }
+        }
+        
+        .background.bg-static .orb {
+            animation: none !important;
+            filter: blur(85px) !important;
+        }
+        
+        /* 首页主体 */
+        .home {
+            position: relative;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 20px;
+            text-align: center;
+            transform-origin: center center;
+        }
+        
+        /* 进入大厅：平滑放大动画 */
+        @keyframes pageExitZoomOnly {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(1.32);
+                pointer-events: none;
+            }
+        }
+        
+        body.page-leaving .home,
+        body.page-leaving .bottom-actions,
+        body.page-leaving .footer {
+            animation: pageExitZoomOnly 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+            pointer-events: none;
+        }
+        
+        .tag {
+            color: #8ca8ff;
+            letter-spacing: 6px;
+            font-size: 13px;
+            margin-bottom: 22px;
+            animation: appear 0.8s ease both;
+        }
+        
+        h1 {
+            font-size: clamp(55px, 12vw, 125px);
+            font-weight: 900;
+            letter-spacing: 5px;
+            line-height: 1.1;
+            background: linear-gradient(120deg, #ffffff, #9ab5ff, #b58aff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 0 35px #667cff55);
+            animation: appear 1s ease both;
+        }
+        
+        .subtitle {
+            margin-top: 22px;
+            color: var(--muted);
+            font-size: 16px;
+            letter-spacing: 3px;
+            animation: appear 1.2s ease both;
+        }
+        
+        /* 进入大厅按钮 */
+        .enter {
+            position: relative;
+            overflow: hidden;
+            margin-top: 45px;
+            padding: 17px 36px;
+            border: 1px solid #a4b1ff88;
+            border-radius: 12px;
+            color: white;
+            background: linear-gradient(135deg, #6752db, #326bd8);
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 0 35px #5968ff33;
+            transition:
+                transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.25s ease,
+                opacity 0.3s ease;
+            animation: appear 1.4s ease both;
+        }
+        
+        .enter::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -80%;
+            width: 45%;
+            height: 200%;
+            background: linear-gradient(90deg, transparent, #ffffff55, transparent);
+            transform: rotate(25deg);
+            transition: left 0.65s ease;
+            pointer-events: none;
+        }
+        
+        .enter:hover::before {
+            left: 140%;
+        }
+        
+        .enter:hover {
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 0 45px #687cff77;
+        }
+        
+        .enter:active {
+            transform: scale(1.08);
+            box-shadow: 0 0 55px #7c8fff99;
+        }
+        
+        .enter:disabled {
+            cursor: wait;
+            opacity: 0.85;
+        }
+        
+        /* 底部版权信息 */
+        .footer {
+            position: fixed;
+            bottom: 25px;
+            left: 0;
+            width: 100%;
+            padding: 0 15px;
+            color: #666f91;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 5;
+            animation: appear 1.5s ease both;
+        }
+        
+        /* 功能按钮容器（已上提位置） */
+        .bottom-actions {
+            position: fixed;
+            right: 28px;
+            bottom: 52px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: actionsAppear 0.8s 0.3s ease both;
+        }
+        
+        @keyframes actionsAppear {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .circle-btn {
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #75aaff;
+            border-radius: 50%;
+            color: var(--icon-color);
+            background: #101a3dcc;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow:
+                0 0 9px #438cff55,
+                inset 0 0 10px #438cff15;
+            cursor: pointer;
+            transition:
+                transform 0.25s ease,
+                background 0.25s ease,
+                border-color 0.25s ease,
+                box-shadow 0.25s ease;
+        }
+        
+        .circle-btn:hover {
+            transform: translateY(-4px) scale(1.06);
+            border-color: #b6d8ff;
+            background: #243d77e8;
+            box-shadow: 0 0 24px #5b9eff99;
+        }
+        
+        .circle-btn:active {
+            transform: scale(0.92);
+        }
+        
+        .circle-btn:focus-visible,
+        .enter:focus-visible,
+        .modal-close-corner:focus-visible {
+            outline: 2px solid white;
+            outline-offset: 4px;
+        }
+        
+        .btn-svg {
+            width: 22px;
+            height: 22px;
+            display: block;
+            color: var(--icon-color);
+            filter: drop-shadow(0 0 5px #5ca7ff);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .circle-btn:hover .icon-settings-svg { transform: rotate(90deg); }
+        .circle-btn:hover .icon-donate-svg { transform: scale(1.15); }
+        .circle-btn:hover .icon-about-svg { transform: scale(1.15); }
+        
+        /* 弹窗样式 */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: #030512cf;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        
+        .modal-box {
+            position: relative;
+            width: min(400px, 100%);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            padding: 38px 26px 32px;
+            text-align: center;
+            border: 1px solid #7f8cff66;
+            border-radius: 22px;
+            background: linear-gradient(145deg, #171f40, #0e142a);
+            box-shadow: 0 0 60px #4d55bb33;
+            opacity: 0;
+            transform: translateY(25px) scale(0.9);
+            filter: blur(5px);
+            transition:
+                transform 0.35s cubic-bezier(.2,.8,.2,1),
+                opacity 0.3s ease,
+                filter 0.3s ease;
+        }
+        
+        .modal.show .modal-box {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+        
+        .modal-close-corner {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            border: 1px solid #75aaff55;
+            background: #152249aa;
+            color: #a9c6ff;
+            cursor: pointer;
+            transition:
+                background 0.2s ease,
+                transform 0.2s ease,
+                color 0.2s ease,
+                border-color 0.2s ease;
+        }
+        
+        .modal-close-corner:hover {
+            background: #283e7eee;
+            color: #ffffff;
+            border-color: #a4c9ff;
+            transform: scale(1.1) rotate(90deg);
+        }
+        
+        .modal-close-corner:active {
+            transform: scale(0.92);
+        }
+        
+        .modal-close-corner svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .modal-icon {
+            width: 62px;
+            height: 62px;
+            margin: 6px auto 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #8d91ff66;
+            border-radius: 50%;
+            background: #6555d922;
+            color: var(--icon-color);
+        }
+        
+        .modal-icon .btn-svg {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .modal-box h2 {
+            margin-bottom: 14px;
+            color: #c4ccff;
+            font-size: 24px;
+        }
+        
+        .modal-box p {
+            color: #a9b2d0;
+            font-size: 14px;
+            line-height: 1.9;
+            overflow-wrap: anywhere;
+        }
+        
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 18px;
+            padding: 14px 16px;
+            border: 1px solid #ffffff14;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+            text-align: left;
+        }
+        
+        .setting-text-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .setting-title {
+            color: #dbe2ff;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        
+        .setting-desc {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .setting-row input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #7865ee;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-left: 14px;
+        }
+        
+        @keyframes appear {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .bottom-actions {
+                right: 18px;
+                bottom: 42px;
+                gap: 10px;
+            }
+        
+            .circle-btn {
+                flex-basis: 43px;
+                width: 43px;
+                height: 43px;
+            }
+        
+            .btn-svg {
+                width: 19px;
+                height: 19px;
+            }
+        
+            .modal-box {
+                padding: 36px 20px 26px;
+            }
+        
+            .tag { font-size: 10px; letter-spacing: 3px; }
+            h1 { letter-spacing: 2px; }
+            .subtitle { font-size: 13px; letter-spacing: 1px; }
+            .enter { padding: 15px 26px; font-size: 15px; }
+            .footer { bottom: 18px; font-size: 10px; letter-spacing: 0.5px; }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <nav class="bottom-actions" aria-label="网站功能">
+        <button class="circle-btn" id="settingsBtn" aria-label="设置" title="设置">
+            <svg class="btn-svg icon-settings-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </button>
+
+        <button class="circle-btn" id="aboutBtn" aria-label="关于" title="关于">
+            <svg class="btn-svg icon-about-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+        </button>
+
+        <button class="circle-btn" id="donateBtn" aria-label="捐款" title="捐款">
+            <svg class="btn-svg icon-donate-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                <path d="M12 18V6"></path>
+            </svg>
+        </button>
+    </nav>
+
+    <main class="home" id="home">
+        <div class="tag">YOUR NEXT LEVEL STARTS HERE</div>
+        <h1>GAME HUB</h1>
+        <p class="subtitle">探索游戏 &middot; 挑战极限 &middot; 享受乐趣</p>
+        <button class="enter" id="enterButton">
+            &#9654; 进入游戏大厅
+        </button>
+    </main>
+
+    <div class="footer">
+        GAME HUB &copy; 2026 &middot; PLAY YOUR WAY
+    </div>
+
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-box">
+            <button class="modal-close-corner" id="closeModalCross" aria-label="关闭窗口" title="关闭">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <div class="modal-icon" id="modalIcon"></div>
+            <h2 id="modalTitle">设置</h2>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const home = document.getElementById("home");
+        const modal = document.getElementById("modal");
+        const modalIcon = document.getElementById("modalIcon");
+        const modalTitle = document.getElementById("modalTitle");
+        const modalContent = document.getElementById("modalContent");
+        const closeModalCross = document.getElementById("closeModalCross");
+        const enterButton = document.getElementById("enterButton");
+        const bgElement = document.querySelector(".background");
+        
+        let previousFocus = null;
+        let isLeaving = false;
+        let closeTimer = null;
+        
+        document.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+        
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+        
+        const BG_STORAGE_KEY = "gamehub_bg_anim";
+        const storedBgSetting = localStorage.getItem(BG_STORAGE_KEY);
+        let isBgAnimEnabled = storedBgSetting === null ? true : (storedBgSetting === "true");
+        
+        function applyBgAnimation(enable) {
+            if (enable) {
+                bgElement.classList.remove("bg-static");
+            } else {
+                bgElement.classList.add("bg-static");
+            }
+        }
+        
+        applyBgAnimation(isBgAnimEnabled);
+        
+        const SVG_MAP = {
+            settings: `
+                <svg class="btn-svg icon-settings-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>`,
+            about: `
+                <svg class="btn-svg icon-about-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>`,
+            donate: `
+                <svg class="btn-svg icon-donate-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                    <path d="M12 18V6"></path>
+                </svg>`
+        };
+        
+        function renderModalIcon(type) {
+            modalIcon.innerHTML = SVG_MAP[type] || "";
+        }
+        
+        function openModal(type, title, content) {
+            if (isLeaving) return;
+        
+            clearTimeout(closeTimer);
+            previousFocus = document.activeElement;
+        
+            modalTitle.textContent = title;
+            modalContent.replaceChildren();
+            renderModalIcon(type);
+        
+            if (typeof content === "string") {
+                const paragraph = document.createElement("p");
+                paragraph.textContent = content;
+                modalContent.appendChild(paragraph);
+            } else {
+                modalContent.appendChild(content);
+            }
+        
+            modal.classList.remove("show");
+            void modal.offsetWidth;
+            modal.classList.add("show");
+        
+            closeModalCross.focus();
+        }
+        
+        function closeModal() {
+            if (!modal.classList.contains("show")) return;
+            modal.classList.remove("show");
+        
+            closeTimer = setTimeout(function() {
+                if (previousFocus && document.contains(previousFocus)) {
+                    previousFocus.focus();
+                }
+            }, 320);
+        }
+        
+        closeModalCross.addEventListener("click", closeModal);
+        
+        document.getElementById("settingsBtn").addEventListener("click", function() {
+            const content = document.createElement("div");
+        
+            const row = document.createElement("label");
+            row.className = "setting-row";
+        
+            const textGroup = document.createElement("div");
+            textGroup.className = "setting-text-group";
+        
+            const labelText = document.createElement("span");
+            labelText.className = "setting-title";
+            labelText.textContent = "动态背景";
+        
+            const description = document.createElement("span");
+            description.className = "setting-desc";
+            description.textContent = "开启或关闭背景动态光效。";
+        
+            textGroup.append(labelText, description);
+        
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = isBgAnimEnabled;
+        
+            checkbox.addEventListener("change", function() {
+                isBgAnimEnabled = checkbox.checked;
+                localStorage.setItem(BG_STORAGE_KEY, String(isBgAnimEnabled));
+                applyBgAnimation(isBgAnimEnabled);
+            });
+        
+            row.append(textGroup, checkbox);
+            content.appendChild(row);
+        
+            openModal("settings", "设置", content);
+        });
+        
+        document.getElementById("aboutBtn").addEventListener("click", function() {
+            openModal(
+                "about",
+                "关于 GAME HUB",
+                "欢迎来到 GAME HUB！这是一个持续更新的迷你游戏平台。你可以在这里探索各种小游戏，挑战自己的反应和技巧。"
+            );
+        });
+        
+        document.getElementById("donateBtn").addEventListener("click", function() {
+            openModal(
+                "donate",
+                "支持 GAME HUB",
+                "感谢你支持 GAME HUB！捐款功能暂未开放，未来可以在这里加入你选择的合法捐款方式。"
+            );
+        });
+        
+        enterButton.addEventListener("click", function() {
+            if (isLeaving) return;
+        
+            isLeaving = true;
+            enterButton.disabled = true;
+            enterButton.textContent = "正在进入游戏大厅…";
+        
+            document.body.classList.add("page-leaving");
+        
+            setTimeout(function() {
+                window.location.href = "games.html";
+            }, 650);
+        });
+    </script>
+
+</body>
+
+</html>
