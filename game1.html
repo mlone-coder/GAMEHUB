@@ -619,6 +619,15 @@
       .bottom-bar { padding-top: 6px; }
       .modal { padding: 18px; }
     }
+    /* 禁止选中文字、长按菜单和双击选取 */
+html,
+body,
+#app {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+
   </style>
 </head>
 <body>
@@ -644,7 +653,7 @@
     <header>
       <div class="brand">
         <img src="assets/cuisan.jpg" alt="崔伞" onerror="this.src='https://raw.githubusercontent.com/mlone-coder/GAMEHUB/main/assets/cuisan.jpg'">
-        SAN RHYTHM
+        CUISAN RHYTHM
       </div>
       <div class="header-actions">
         <button class="small-btn" id="musicBtn" type="button">
@@ -1899,6 +1908,15 @@
       updateStats();
       updateProgress();
     })();
+    <script>
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+});
+
+document.addEventListener('selectstart', function(e) {
+  e.preventDefault();
+});
+</script>
   </script>
 </body>
 </html>
