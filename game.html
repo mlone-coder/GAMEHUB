@@ -6,9 +6,12 @@
   <title>崔伞节奏挑战 | SAN RHYTHM</title>
   <meta name="description" content="跟随音乐节奏击打音符，挑战你的反应速度！">
   <meta name="category" content="arcade">
-  <meta name="icon" content="🎵">
   <meta name="theme-color" content="#090510">
-  
+
+  <!-- 引入 Firebase 官方核心与实时数据库 SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
   <style>
     :root {
       --bg: #090510;
@@ -46,6 +49,32 @@
     button:focus-visible {
       outline: 2px solid white;
       outline-offset: 3px;
+    }
+
+    /* 自绘 SVG 统一样式 */
+    .svg-icon {
+      display: inline-block;
+      width: 1.15em;
+      height: 1.15em;
+      vertical-align: -0.22em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      margin-right: 4px;
+      pointer-events: none;
+    }
+    .svg-icon polygon {
+      fill: currentColor;
+      stroke: none;
+    }
+    .svg-title-icon {
+      width: 1.2em;
+      height: 1.2em;
+      vertical-align: -0.18em;
+      margin-right: 6px;
+      stroke: var(--pink);
     }
 
     #app {
@@ -95,13 +124,23 @@
       border: 3px solid rgba(189, 104, 255, 0.15);
       border-top-color: var(--pink);
       border-right-color: var(--purple);
-      animation: spin 0.85s linear infinite;
+      animation: spin .85s linear infinite;
       box-shadow: 0 0 25px rgba(189, 104, 255, 0.35);
     }
 
     .spinner-core {
-      font-size: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--pink);
       animation: pulse 1.5s ease-in-out infinite;
+    }
+    .spinner-core svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--pink);
+      stroke-width: 2.2;
+      fill: none;
     }
 
     @keyframes spin {
@@ -109,7 +148,7 @@
     }
 
     @keyframes pulse {
-      0%, 100% { transform: scale(0.9); opacity: 0.7; }
+      0%, 100% { transform: scale(.9); opacity: .7; }
       50% { transform: scale(1.15); opacity: 1; }
     }
 
@@ -142,7 +181,7 @@
       inset: 0;
       pointer-events: none;
       opacity: .32;
-      background-image: 
+      background-image:
         linear-gradient(rgba(189, 104, 255, .08) 1px, transparent 1px),
         linear-gradient(90deg, rgba(189, 104, 255, .08) 1px, transparent 1px);
       background-size: 38px 38px;
@@ -151,7 +190,7 @@
 
     header {
       position: relative;
-      z-index: 2;
+      z-index: 10;
       padding: 12px 16px 6px;
       display: flex;
       align-items: center;
@@ -180,6 +219,10 @@
       background: #1b1029;
       padding: 8px 12px;
       border-radius: 12px;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #desktopHint {
@@ -255,10 +298,9 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: .28;
+      opacity: .45;
       pointer-events: none;
-      transform: translateZ(0);
-      will-change: transform;
+      background: #10091b;
     }
 
     #videoShade {
@@ -266,6 +308,27 @@
       inset: 0;
       background: linear-gradient(180deg, rgba(9, 5, 16, .2), rgba(9, 5, 16, .85));
       pointer-events: none;
+    }
+
+    #lyricBanner {
+      position: absolute;
+      top: 14%;
+      left: 10px;
+      right: 10px;
+      text-align: center;
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 0 10px var(--pink), 0 0 20px var(--purple);
+      z-index: 5;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s ease, transform .3s ease;
+      transform: translateY(-8px);
+    }
+    #lyricBanner.show {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .lanes {
@@ -290,22 +353,21 @@
 
     .note {
       position: absolute;
-      left: 10%;
-      width: 80%;
-      height: 14px;
+      left: 12%;
+      width: 76%;
+      height: 15px;
       border-radius: 7px;
-      box-shadow: 0 0 14px currentColor;
+      box-shadow: 0 0 15px currentColor;
       background: currentColor;
-      transform: translateY(-50%) translateZ(0);
+      transform: translateY(-50%);
       pointer-events: none;
-      will-change: top;
     }
 
     .note::after {
       content: "";
       position: absolute;
-      inset: 2px 6px;
-      background: rgba(255, 255, 255, .8);
+      inset: 3px 6px;
+      background: rgba(255, 255, 255, .75);
       border-radius: 4px;
     }
 
@@ -314,18 +376,16 @@
     .lane:nth-child(3) .note { color: #55cfff; }
     .lane:nth-child(4) .note { color: #ff8a55; }
 
-    /* 判定横线精准匹配 81% */
     .hit-line {
       position: absolute;
       left: 0;
       right: 0;
-      top: 81%;
+      bottom: 19%;
       height: 3px;
-      background: #ffffff;
+      background: white;
       box-shadow: 0 0 12px var(--pink), 0 0 25px var(--purple);
       z-index: 2;
       pointer-events: none;
-      transform: translateY(-50%);
     }
 
     .hit-line::before,
@@ -343,10 +403,10 @@
 
     .lane-controls {
       position: absolute;
-      top: 81%;
       bottom: 0;
       left: 0;
       right: 0;
+      height: 19%;
       min-height: 48px;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -425,6 +485,7 @@
       max-width: 300px;
     }
 
+    /* 底部常规操作栏 */
     .bottom-bar {
       position: relative;
       z-index: 2;
@@ -474,6 +535,9 @@
       background: #211331;
       font-weight: 750;
       text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .primary-btn {
@@ -485,6 +549,107 @@
     .primary-btn:disabled {
       opacity: .45;
       cursor: not-allowed;
+    }
+
+    /* 变形录制控制台 */
+    #recorderConsole {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 14px max(12px, env(safe-area-inset-bottom));
+      background: rgba(18, 9, 31, 0.96);
+      border-top: 1px solid rgba(189, 104, 255, 0.35);
+      width: min(100%, 564px);
+      align-self: center;
+      z-index: 10;
+    }
+    #recorderConsole.active {
+      display: flex;
+    }
+
+    .rec-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rec-indicator {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      color: #ff72dc;
+      font-weight: bold;
+    }
+
+    .rec-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      background: #ff3b68;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1s infinite;
+    }
+    .rec-dot.paused {
+      background: #ffaa00;
+      animation: none;
+    }
+
+    .rec-beat-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 6px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      color: #d1bde8;
+    }
+    .rec-beat-tools span {
+      white-space: nowrap;
+    }
+    .beat-btn {
+      flex: 1;
+      padding: 5px 0;
+      font-size: 12px;
+      font-weight: 900;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #25163a;
+      color: #fff;
+    }
+    .beat-btn:active {
+      transform: scale(0.95);
+      background: var(--pink);
+    }
+    .beat-btn.btn-d { color: #ff58c7; }
+    .beat-btn.btn-f { color: #a875ff; }
+    .beat-btn.btn-j { color: #55cfff; }
+    .beat-btn.btn-k { color: #ff8a55; }
+
+    .text-marker-row {
+      display: flex;
+      gap: 6px;
+    }
+    .text-marker-row input {
+      background: #11081f;
+      border: 1px solid #67428c;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      outline: none;
+    }
+    .text-marker-row input:focus {
+      border-color: var(--pink);
+    }
+    #markerTimeInput {
+      width: 75px;
+      text-align: center;
+    }
+    #markerTextInput {
+      flex: 1;
     }
 
     .overlay {
@@ -535,7 +700,9 @@
 
     .modal h2 {
       margin: 0 0 12px;
-      font-size: 25px;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
     }
 
     .modal p,
@@ -586,6 +753,20 @@
       border-color: transparent;
     }
 
+    .admin-pwd-input {
+      width: 100%;
+      background: #10081d;
+      border: 1px solid #67428c;
+      color: #fff;
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 10px;
+      outline: none;
+    }
+    .admin-pwd-input:focus {
+      border-color: var(--pink);
+    }
+
     @media (pointer: coarse) {
       #desktopHint {
         display: none;
@@ -605,13 +786,14 @@
   <!-- 预加载界面 -->
   <div id="loaderOverlay">
     <div class="spinner-box" id="spinnerBox">
-      <div class="spinner-ring" id="spinnerRing"></div>
-      <div class="spinner-core" id="spinnerCore">🎵</div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-core">
+        <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
     </div>
-    <div class="loader-title" id="loaderTitle">SAN RHYTHM</div>
-    <div class="loader-status" id="loaderStatus">正在加载音乐与舞蹈视频...</div>
+    <div class="loader-title">SAN RHYTHM</div>
+    <div class="loader-status" id="loaderStatus">正在连接视频与云端数据...</div>
     
-    <!-- 报错时显示的退出按钮（无箭头） -->
     <div class="loader-error-actions" id="loaderErrorActions">
       <button class="secondary-btn" id="loaderExitBtn" type="button">返回大厅</button>
     </div>
@@ -623,8 +805,12 @@
     <header>
       <div class="brand">SAN RHYTHM</div>
       <div class="header-actions">
-        <button class="small-btn" id="musicBtn" type="button">♫ 音乐</button>
-        <button class="small-btn" id="pauseBtn" type="button">Ⅱ 暂停</button>
+        <button class="small-btn" id="musicBtn" type="button">
+          <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg> 声音
+        </button>
+        <button class="small-btn" id="pauseBtn" type="button">
+          <svg class="svg-icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg> 暂停
+        </button>
       </div>
     </header>
 
@@ -653,9 +839,10 @@
 
     <main class="game-area">
       <div id="stage">
-        <video id="videoBackground" playsinline webkit-playsinline muted loop preload="auto"></video>
+        <video id="videoBackground" playsinline webkit-playsinline preload="auto"></video>
         <div id="videoShade"></div>
-        
+        <div id="lyricBanner"></div>
+
         <div class="lanes" id="lanes">
           <div class="lane" data-lane="0"></div>
           <div class="lane" data-lane="1"></div>
@@ -680,38 +867,85 @@
       </div>
     </main>
 
-    <section class="bottom-bar">
+    <!-- 常规操作底部栏 -->
+    <section class="bottom-bar" id="normalBottomBar">
       <div class="track-info">
-        <span id="songLabel">SHE SO BAD · RHYTHM CHALLENGE</span>
+        <span id="songLabel">SAN DANCE · RHYTHM CHALLENGE</span>
         <span id="songTime">00:00 / 00:00</span>
       </div>
-      <input id="seek" type="range" min="0" max="1000" value="0" aria-label="音乐播放进度">
+      <input id="seek" type="range" min="0" max="1000" value="0" aria-label="视频播放进度">
       <div class="bottom-controls">
-        <button class="primary-btn" id="startBtn" type="button">▶ 开始游戏</button>
-        <button class="secondary-btn" id="restartBtn" type="button">↻ 重开</button>
+        <button class="primary-btn" id="startBtn" type="button">
+          <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> 开始游戏
+        </button>
+        <button class="secondary-btn" id="restartBtn" type="button">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.8 1.03 6.45 2.7L21 8"/><polyline points="21 3 21 8 16 8"/></svg> 重开
+        </button>
+      </div>
+    </section>
+
+    <!-- 变形录制控制台 -->
+    <section id="recorderConsole">
+      <div class="rec-top-row">
+        <div class="rec-indicator" id="recStatusIndicator">
+          <span class="rec-dot" id="recDot"></span>
+          <span id="recStatusText">正在录制节拍 (敲击D/F/J/K实时打点)</span>
+        </div>
+        <button class="small-btn" id="recPauseToggleBtn" type="button" style="padding:4px 10px;font-size:11px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg> 暂停录制
+        </button>
+      </div>
+
+      <div class="rec-beat-tools">
+        <span>当前点加音符:</span>
+        <button class="beat-btn btn-d" data-rec-lane="0" type="button">+ D 轨</button>
+        <button class="beat-btn btn-f" data-rec-lane="1" type="button">+ F 轨</button>
+        <button class="beat-btn btn-j" data-rec-lane="2" type="button">+ J 轨</button>
+        <button class="beat-btn btn-k" data-rec-lane="3" type="button">+ K 轨</button>
+      </div>
+
+      <div class="text-marker-row">
+        <input type="text" id="markerTimeInput" placeholder="分:秒(01:15)">
+        <input type="text" id="markerTextInput" placeholder="在此秒浮现的字幕/歌词...">
+        <button class="small-btn" id="addCurrentTimeBtn" type="button" title="获取当前视频时间">
+          <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 获取时间
+        </button>
+        <button class="primary-btn" id="addMarkerBtn" type="button" style="padding:6px 12px;font-size:12px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加文字
+        </button>
+      </div>
+
+      <div class="bottom-controls" style="margin-top:2px;">
+        <span id="recCounter" style="align-self:center;font-size:11px;color:#c9b9dd;flex:1;">已录音符: 0 | 已加文字: 0</span>
+        <button class="primary-btn" id="finishRecordBtn" type="button" style="padding:8px 14px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 结束录制并云同步
+        </button>
+        <button class="secondary-btn" id="cancelRecordBtn" type="button" style="padding:8px 14px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 取消录制
+        </button>
       </div>
     </section>
   </div>
 
-  <audio id="music" preload="auto"></audio>
-
-  <!-- 首次进入游戏须知 -->
-  <div class="overlay" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
+  <!-- 首次进入须知 -->
+  <div class="overlay show" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
     <div class="modal">
-      <h2 id="noticeTitle">🎵 游戏须知</h2>
+      <h2 id="noticeTitle">
+        <svg class="svg-title-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        游戏须知
+      </h2>
       <ul>
         <li><b>电脑：</b>按 D、F、J、K 击打四条轨道；按 ESC 暂停。</li>
         <li><b>手机：</b>点击屏幕底部对应的四条轨道按钮。</li>
-        <li>音符到达白色判定横线时击打，争取 PERFECT 和更高 COMBO。</li>
-        <li>本游戏支持音乐、舞蹈视频背景、音量控制及最佳记录保存。</li>
+        <li>音符接近白色判定线时击打，争取 PERFECT 和更高 COMBO。</li>
+        <li>声音和舞蹈画面直接来自视频文件。</li>
+        <li>已连入 Firebase，全网玩家自动同步最新录制节拍。</li>
       </ul>
       <p class="confirm-text">
-        <b>版权提醒：</b>音乐、视频、照片及其他素材可能受版权保护。
-        使用前请确认自己已取得所需授权。此提醒不代表素材已获授权，
-        也不免除使用者应承担的责任。
+        <b>版权提醒：</b>使用前请确认已取得所需授权。
       </p>
       <div class="modal-actions">
-        <button class="primary-btn" id="acceptNotice" type="button">我知道了，进入游戏</button>
+        <button class="primary-btn" id="acceptNotice" type="button">我知道了，开始游戏</button>
         <button class="secondary-btn" id="noticeExit" type="button">返回大厅</button>
       </div>
     </div>
@@ -720,30 +954,82 @@
   <!-- 暂停菜单 -->
   <div class="overlay" id="pauseModal" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
     <div class="modal">
-      <h2 id="pauseTitle">Ⅱ 游戏已暂停</h2>
+      <h2 id="pauseTitle">
+        <svg class="svg-title-icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+        游戏已暂停
+      </h2>
       <p>休息一下，准备好后继续挑战。</p>
       <div class="modal-actions">
-        <button class="primary-btn" id="resumeBtn" type="button">▶ 继续游戏</button>
-        <button class="secondary-btn" id="pauseRestartBtn" type="button">↻ 重新开始</button>
-        <button class="secondary-btn" id="settingsBtn" type="button">⚙ 音乐设置</button>
+        <button class="primary-btn" id="resumeBtn" type="button">
+          <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> 继续游戏
+        </button>
+        <button class="secondary-btn" id="pauseRestartBtn" type="button">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.8 1.03 6.45 2.7L21 8"/><polyline points="21 3 21 8 16 8"/></svg> 重新开始
+        </button>
+        <button class="secondary-btn" id="pauseAdminBtn" type="button">
+          <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 管理员模式 (更改节拍)
+        </button>
+        <button class="secondary-btn" id="settingsBtn" type="button">
+          <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 声音设置
+        </button>
         <button class="secondary-btn" id="pauseExitBtn" type="button">返回大厅</button>
       </div>
     </div>
   </div>
 
-  <!-- 音乐设置 -->
+  <!-- 管理员密码验证弹窗 -->
+  <div class="overlay" id="adminAuthModal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2>
+        <svg class="svg-title-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        管理员验证
+      </h2>
+      <p>请输入管理员密码以进入节拍录制与编辑模式：</p>
+      <input type="password" class="admin-pwd-input" id="adminPwdInput" placeholder="输入管理员密码">
+      <div id="adminAuthTip" style="color:#ff6078;font-size:12px;margin-top:6px;display:none;">密码错误，请重新输入！</div>
+      <div class="modal-actions">
+        <button class="primary-btn" id="adminAuthConfirm" type="button">确认进入</button>
+        <button class="secondary-btn" id="adminAuthBack" type="button">返回暂停菜单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 管理员操作选择弹窗 -->
+  <div class="overlay" id="adminMenuModal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2>
+        <svg class="svg-title-icon" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        更改节拍与标记
+      </h2>
+      <p>选择你要执行的管理员操作：</p>
+      <div class="modal-actions">
+        <button class="primary-btn" id="startRecordingModeBtn" type="button">
+          <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg> 开始录制节拍 (底部变形)
+        </button>
+        <button class="secondary-btn" id="clearCustomBeatmapBtn" type="button">
+          <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> 恢复默认节拍 (清空云端谱面)
+        </button>
+        <button class="secondary-btn" id="adminMenuBack" type="button">返回暂停菜单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 声音设置 -->
   <div class="overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
     <div class="modal">
-      <h2 id="settingsTitle">⚙ 音乐设置</h2>
+      <h2 id="settingsTitle">
+        <svg class="svg-title-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        声音设置
+      </h2>
       <label class="setting-row">
-        <span>启用音乐</span>
+        <span>启用声音</span>
         <input type="checkbox" id="musicEnabled" checked>
       </label>
       <label class="setting-row">
-        <span>音乐音量</span>
+        <span>音量大小</span>
         <input type="range" id="volume" min="0" max="100" value="75">
       </label>
-      <p style="font-size:12px; color:#aaa0bd; margin:10px 0;">音频素材：she-so-bad.mp3<br>视频素材：san-dance.mp4</p>
+      <p style="font-size:12px; color:#aaa0bd; margin:10px 0;">素材：san-dance.mp4</p>
       <div class="modal-actions">
         <button class="primary-btn" id="saveSettings" type="button">保存设置</button>
         <button class="secondary-btn" id="settingsBack" type="button">返回暂停菜单</button>
@@ -751,12 +1037,12 @@
     </div>
   </div>
 
-  <!-- 返回大厅二次确认 -->
+  <!-- 退出确认 -->
   <div class="overlay" id="exitModal" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
     <div class="modal">
       <h2 id="exitTitle">要返回游戏大厅吗？</h2>
       <p class="confirm-text">
-        返回后本局游戏将结束，进度将不会保存。
+        返回后，本局游戏将结束，视频会停止播放。
       </p>
       <div class="modal-actions">
         <button class="secondary-btn" id="cancelExit" type="button">取消，继续游戏</button>
@@ -768,7 +1054,10 @@
   <!-- 结算 -->
   <div class="overlay" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
     <div class="modal">
-      <h2 id="resultTitle">🏆 挑战完成！</h2>
+      <h2 id="resultTitle">
+        <svg class="svg-title-icon" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+        挑战完成！
+      </h2>
       <p id="resultSummary"></p>
       <div class="modal-actions">
         <button class="primary-btn" id="resultRetry" type="button">再挑战一次</button>
@@ -781,13 +1070,47 @@
     (() => {
       "use strict";
 
+      /* ==================================================================
+       * 🔑 已填入你的真实 Firebase 项目配置
+       * ================================================================== */
+      const firebaseConfig = {
+        apiKey: "AIzaSyChsUVnqMrrXkoXXpnPu08UhmOTwBS3PvY",
+        authDomain: "cuisangame.firebaseapp.com",
+        databaseURL: "https://cuisangame-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "cuisangame",
+        storageBucket: "cuisangame.firebasestorage.app",
+        messagingSenderId: "476018892904",
+        appId: "1:476018892904:web:cb9d1ad2f4c68abb33dbdd",
+        measurementId: "G-8B11NE2C4M"
+      };
+
+      // 初始化 Firebase 实时数据库实例
+      let db = null;
+      try {
+        if (window.firebase) {
+          firebase.initializeApp(firebaseConfig);
+          db = firebase.database();
+          console.log("Firebase 实时云端数据库连接成功！");
+        }
+      } catch (err) {
+        console.warn("Firebase 连接失败，降级为本地运行:", err);
+      }
+
+      // 自绘矢量图标库
+      const ICONS = {
+        play: `<svg class="svg-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>`,
+        pause: `<svg class="svg-icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>`,
+        sound: `<svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`,
+        mute: `<svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`
+      };
+
       const $ = id => document.getElementById(id);
-      const music = $("music");
       const video = $("videoBackground");
       const stage = $("stage");
       const lanes = [...document.querySelectorAll(".lane")];
       const laneButtons = [...document.querySelectorAll(".lane-key")];
-      
+      const lyricBanner = $("lyricBanner");
+
       const loaderOverlay = $("loaderOverlay");
       const loaderStatus = $("loaderStatus");
       const loaderErrorActions = $("loaderErrorActions");
@@ -797,11 +1120,17 @@
         pause: $("pauseModal"),
         settings: $("settingsModal"),
         exit: $("exitModal"),
-        result: $("resultModal")
+        result: $("resultModal"),
+        adminAuth: $("adminAuthModal"),
+        adminMenu: $("adminMenuModal")
       };
 
       const KEY_MAP = { d: 0, f: 1, j: 2, k: 3 };
+      const LANE_KEYS = ["D", "F", "J", "K"];
       const BEST_KEY = "sanRhythmBestV1";
+      const CUSTOM_BEATMAP_KEY = "sanCustomBeatmapV1";
+      const TEXT_MARKERS_KEY = "sanTextMarkersV1";
+      const ADMIN_PWD = "SAN2026";
 
       let bestScore = readBest();
       let score = 0;
@@ -817,17 +1146,21 @@
       let finished = false;
       let leaving = false;
       let settingsReturnTo = "pause";
+      let preloadComplete = false;
 
-      let clockBaseTime = 0;
-      let clockAudioOffset = 0;
-      let isAudioRunning = false;
-      let lastVideoSyncTime = 0;
+      let isRecordingMode = false;
+      let isRecPaused = false;
+      let tempRecordedNotes = [];
+      let tempRecordedMarkers = [];
+      let activeTextMarkers = readSavedMarkers();
+      let activeLyricTimer = null;
 
-      const SONG_LENGTH = 80;
+      const SONG_LENGTH = 90;
 
-      const demoBeatmap = [];
-      for (let bar = 0; bar < 42; bar++) {
-        const base = 1.2 + bar * 1.6;
+      // 默认基础演示谱面 (云端无数据时的本地保底)
+      const defaultBeatmap = [];
+      for (let bar = 0; bar < 45; bar++) {
+        const base = 1.0 + bar * 1.6;
         const pattern = [
           { t: 0, lane: bar % 4 },
           { t: 0.4, lane: (bar + 1) % 4 },
@@ -836,160 +1169,128 @@
         ];
 
         pattern.forEach((n, i) => {
-          demoBeatmap.push({
-            time: base + n.t,
-            lane: n.lane,
-            id: `${bar}-${i}`,
-            hit: false,
-            judged: false,
-            element: null
-          });
+          if (base + n.t < SONG_LENGTH) {
+            defaultBeatmap.push({
+              time: Number((base + n.t).toFixed(3)),
+              lane: n.lane,
+              id: `${bar}-${i}`,
+              hit: false,
+              judged: false,
+              element: null
+            });
+          }
         });
       }
 
-      const lastNoteTimestamp = demoBeatmap[demoBeatmap.length - 1].time;
-
-      /* ------------------------------------------------------------------
-       * 核心修复：立刻掐断网络连接并毫秒级瞬切大厅
-       * ------------------------------------------------------------------ */
-      function instantExitToLobby() {
-        leaving = true;
-        finished = true;
-        paused = true;
-        gameStarted = false;
-
-        // 1. 彻底清除计时器与动画
-        if (loadTimer) clearTimeout(loadTimer);
-        cancelAnimationFrame(animationId);
-
-        // 2. 核心：清空媒体源并触发 load()，强制浏览器立即中断卡顿的 HTTP 连接
+      function readSavedBeatmap() {
         try {
-          music.pause();
-          music.removeAttribute("src");
-          music.load();
-        } catch {}
-
-        try {
-          video.pause();
-          video.removeAttribute("src");
-          video.load();
-        } catch {}
-
-        clearNotes();
-
-        // 3. 使用 replace 进行瞬时无阻塞跳转，消除历史栈排队
-        window.location.replace("games.html");
-      }
-
-      /* ------------------------------------------------------------------
-       * 1. 资源加载与 5 秒超时中英双语报错
-       * ------------------------------------------------------------------ */
-      let audioReady = false;
-      let videoReady = false;
-      let isPreloaderFinished = false;
-      let loadTimer = null;
-
-      function checkAllLoaded() {
-        if (isPreloaderFinished || leaving) return;
-
-        if (audioReady && videoReady) {
-          if (loadTimer) clearTimeout(loadTimer);
-          loaderStatus.innerHTML = "✨ 资源加载完毕，准备进入...<br><span style='font-size:12px;color:#aaa0bd;'>Ready to play</span>";
-          setTimeout(completePreload, 400);
+          const data = JSON.parse(localStorage.getItem(CUSTOM_BEATMAP_KEY) || "[]");
+          return Array.isArray(data) && data.length > 0 ? data : null;
+        } catch {
+          return null;
         }
       }
 
-      function completePreload() {
-        if (isPreloaderFinished || leaving) return;
-        isPreloaderFinished = true;
-        loaderOverlay.classList.add("hidden");
-        showOverlay("notice");
+      function readSavedMarkers() {
+        try {
+          const data = JSON.parse(localStorage.getItem(TEXT_MARKERS_KEY) || "[]");
+          return Array.isArray(data) ? data : [];
+        } catch {
+          return [];
+        }
       }
 
-      function handleLoadTimeout() {
-        if (isPreloaderFinished || leaving) return;
-        if (audioReady && videoReady) return;
+      /* ------------------------------------------------------------------
+       * 🌐 Firebase 实时监听：全网任何管理员更新，所有玩家无需刷新自动同步
+       * ------------------------------------------------------------------ */
+      if (db) {
+        db.ref("sanRhythmData").on("value", snapshot => {
+          const cloudData = snapshot.val();
+          if (cloudData) {
+            if (Array.isArray(cloudData.beatmap) && cloudData.beatmap.length > 0) {
+              localStorage.setItem(CUSTOM_BEATMAP_KEY, JSON.stringify(cloudData.beatmap));
+            }
+            if (Array.isArray(cloudData.markers)) {
+              activeTextMarkers = cloudData.markers;
+              localStorage.setItem(TEXT_MARKERS_KEY, JSON.stringify(cloudData.markers));
+            }
+            if (!isRecordingMode && !gameStarted) {
+              buildNotes();
+            }
+            console.log("已实时同步最新云端节拍与标记数据！");
+          }
+        });
+      }
 
-        loaderStatus.innerHTML = `
-          <div style="color: #ff4d6d; font-weight: 900; font-size: 16px; letter-spacing: 1px; margin-bottom: 4px;">
-            ERROR: 找不到对应文件
-          </div>
-          <div style="color: #ff85a1; font-size: 13px; font-weight: 700; letter-spacing: 0.5px;">
-            ERROR: File Not Found
-          </div>
-        `;
-        loaderErrorActions.style.display = "flex";
+      /* ------------------------------------------------------------------
+       * 视频探测：真实失败才报错
+       * ------------------------------------------------------------------ */
+      const VIDEO_CANDIDATE_PATHS = [
+        "assets/san-dance.mp4",
+        "../../assets/san-dance.mp4",
+        "https://mlone-coder.github.io/GAMEHUB/assets/san-dance.mp4",
+        "https://cdn.jsdelivr.net/gh/mlone-coder/GAMEHUB@main/assets/san-dance.mp4",
+        "san-dance.mp4"
+      ];
+
+      let candidateIndex = 0;
+
+      function onVideoReady() {
+        if (preloadComplete || leaving) return;
+        preloadComplete = true;
+
+        loaderStatus.innerHTML = "视频已就绪，准备进入！";
+        setTimeout(() => {
+          if (leaving) return;
+          loaderOverlay.classList.add("hidden");
+          showOverlay("notice");
+        }, 400);
+      }
+
+      function loadNextVideoPath() {
+        if (candidateIndex >= VIDEO_CANDIDATE_PATHS.length) {
+          loaderStatus.innerHTML = `
+            <div style="color: #ff4d6d; font-weight: 900; font-size: 16px; letter-spacing: 1px; margin-bottom: 4px;">
+              ERROR: 找不到对应文件
+            </div>
+            <div style="color: #ff85a1; font-size: 13px; font-weight: 700; letter-spacing: 0.5px;">
+              ERROR: File Not Found
+            </div>
+          `;
+          loaderErrorActions.style.display = "flex";
+          return;
+        }
+
+        const candidate = VIDEO_CANDIDATE_PATHS[candidateIndex];
+
+        video.onloadedmetadata = onVideoReady;
+        video.oncanplay = onVideoReady;
+        video.onloadeddata = onVideoReady;
+
+        video.onerror = () => {
+          candidateIndex++;
+          loadNextVideoPath();
+        };
+
+        video.muted = true;
+        video.src = candidate;
+        video.load();
+
+        if (video.readyState >= 1) {
+          onVideoReady();
+        }
       }
 
       function initAssetLoader() {
-        audioReady = false;
-        videoReady = false;
-        isPreloaderFinished = false;
-
-        loaderStatus.innerHTML = "正在加载音乐与舞蹈视频...<br><span style='font-size:12px; color:#aaa0bd;'>Loading audio and video assets...</span>";
+        preloadComplete = false;
+        candidateIndex = 0;
         loaderErrorActions.style.display = "none";
-
-        if (loadTimer) clearTimeout(loadTimer);
-        loadTimer = setTimeout(handleLoadTimeout, 5000);
-
-        music.src = "assets/she-so-bad.mp3";
-        music.load();
-
-        music.oncanplay = () => {
-          audioReady = true;
-          checkAllLoaded();
-        };
-
-        music.onerror = () => {
-          if (!music.dataset.retried) {
-            music.dataset.retried = "1";
-            music.src = "she-so-bad.mp3";
-            music.load();
-          }
-        };
-
-        video.src = "assets/san-dance.mp4";
-        video.load();
-
-        video.onloadeddata = () => {
-          videoReady = true;
-          checkAllLoaded();
-        };
-
-        video.onerror = () => {
-          if (!video.dataset.retried) {
-            video.dataset.retried = "1";
-            video.src = "san-dance.mp4";
-            video.load();
-          }
-        };
+        loaderOverlay.classList.remove("hidden");
+        loaderStatus.textContent = "正在连接视频与云端数据...";
+        loadNextVideoPath();
       }
-
-      // 绑定秒切大厅函数
-      $("loaderExitBtn").addEventListener("click", instantExitToLobby);
 
       initAssetLoader();
-
-      /* ------------------------------------------------------------------
-       * 2. 毫秒级性能时钟体系
-       * ------------------------------------------------------------------ */
-      function getPreciseTime() {
-        if (!gameStarted || paused) {
-          return clockAudioOffset;
-        }
-
-        const now = performance.now();
-        let calculated = (now - clockBaseTime) / 1000;
-
-        if (isAudioRunning && Number.isFinite(music.currentTime) && !music.paused) {
-          const actual = music.currentTime;
-          if (Math.abs(calculated - actual) > 0.075) {
-            clockBaseTime = now - (actual * 1000);
-            calculated = actual;
-          }
-        }
-        return Math.max(0, calculated);
-      }
 
       function readBest() {
         try {
@@ -1011,11 +1312,20 @@
         return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
       }
 
+      function parseTimeToSeconds(timeStr) {
+        if (!timeStr) return 0;
+        const parts = timeStr.trim().split(":");
+        if (parts.length === 2) {
+          const m = Number(parts[0]) || 0;
+          const s = Number(parts[1]) || 0;
+          return m * 60 + s;
+        }
+        return Number(timeStr) || 0;
+      }
+
       function showOverlay(name) {
         Object.values(overlays).forEach(el => el.classList.remove("show"));
-        if (overlays[name]) {
-          overlays[name].classList.add("show");
-        }
+        if (overlays[name]) overlays[name].classList.add("show");
       }
 
       function hideOverlays() {
@@ -1029,6 +1339,16 @@
         el.classList.remove("show");
         void el.offsetWidth;
         el.classList.add("show");
+      }
+
+      function showFloatingLyric(text) {
+        if (!text) return;
+        lyricBanner.textContent = text;
+        lyricBanner.classList.add("show");
+        if (activeLyricTimer) clearTimeout(activeLyricTimer);
+        activeLyricTimer = setTimeout(() => {
+          lyricBanner.classList.remove("show");
+        }, 2500);
       }
 
       function updateStats() {
@@ -1048,8 +1368,13 @@
 
       function buildNotes() {
         clearNotes();
-        notes = demoBeatmap.map(note => ({
-          ...note,
+        const customMap = readSavedBeatmap();
+        const activeMap = customMap || defaultBeatmap;
+
+        notes = activeMap.map((note, index) => ({
+          time: Number(note.time),
+          lane: Number(note.lane),
+          id: `note-${index}`,
           hit: false,
           judged: false,
           element: null
@@ -1058,10 +1383,11 @@
       }
 
       function getDuration() {
-        if (Number.isFinite(music.duration) && music.duration > 0) {
-          return music.duration;
-        }
-        return Math.max(SONG_LENGTH, lastNoteTimestamp + 2);
+        return Number.isFinite(video.duration) && video.duration > 0 ? video.duration : SONG_LENGTH;
+      }
+
+      function getCurrentTime() {
+        return Number.isFinite(video.currentTime) ? video.currentTime : 0;
       }
 
       function createNote(note) {
@@ -1075,7 +1401,7 @@
       function updateNotes(time) {
         const stageHeight = stage.clientHeight;
         const hitY = stageHeight * 0.81;
-        const travelTime = 1.6;
+        const travelTime = 1.65;
 
         while (
           nextNoteIndex < notes.length &&
@@ -1088,13 +1414,27 @@
         notes.forEach(note => {
           if (note.judged || !note.element) return;
           const delta = note.time - time;
-          const y = hitY - (delta / travelTime) * hitY;
+          const y = hitY - delta / travelTime * hitY;
           note.element.style.top = `${y}px`;
 
-          if (delta < -0.16) {
+          if (delta < -0.18) {
             judgeMiss(note);
           }
         });
+
+        checkTextMarkers(time);
+      }
+
+      let lastCheckedSecond = -1;
+      function checkTextMarkers(currentTime) {
+        const currentSec = Math.floor(currentTime);
+        if (currentSec !== lastCheckedSecond) {
+          lastCheckedSecond = currentSec;
+          const matched = activeTextMarkers.find(m => Math.floor(m.time) === currentSec);
+          if (matched) {
+            showFloatingLyric(matched.text);
+          }
+        }
       }
 
       function judgeMiss(note) {
@@ -1111,13 +1451,32 @@
         showFeedback("MISS", "#ff6078");
       }
 
+      function addRecordedBeat(lane) {
+        const time = getCurrentTime();
+        tempRecordedNotes.push({
+          time: Number(time.toFixed(3)),
+          lane: lane
+        });
+        updateRecorderConsoleUI();
+        showFeedback(`${LANE_KEYS[lane]} · ${formatTime(time)}`, "#ff72dc");
+      }
+
+      function updateRecorderConsoleUI() {
+        $("recCounter").textContent = `已录音符: ${tempRecordedNotes.length} | 已加文字: ${tempRecordedMarkers.length}`;
+      }
+
       function hitLane(lane) {
+        if (isRecordingMode) {
+          addRecordedBeat(lane);
+          return;
+        }
+
         if (!gameStarted || paused || finished || leaving) return;
 
         laneButtons[lane].classList.add("pressed");
         setTimeout(() => laneButtons[lane]?.classList.remove("pressed"), 100);
 
-        const time = getPreciseTime();
+        const time = getCurrentTime();
         let target = null;
         let bestDelta = Infinity;
 
@@ -1130,7 +1489,7 @@
           }
         });
 
-        if (!target || bestDelta > 0.20) {
+        if (!target || bestDelta > 0.22) {
           showFeedback("空击", "#9b8aa8");
           return;
         }
@@ -1145,12 +1504,12 @@
 
         let label, points, accuracy;
 
-        if (bestDelta <= 0.065) {
+        if (bestDelta <= 0.075) {
           label = "PERFECT";
           points = 1000;
           accuracy = 1;
           showFeedback(label, "#ff72dc");
-        } else if (bestDelta <= 0.125) {
+        } else if (bestDelta <= 0.14) {
           label = "GREAT";
           points = 700;
           accuracy = 0.75;
@@ -1173,22 +1532,25 @@
       function tick() {
         if (!gameStarted || paused || finished || leaving) return;
 
-        const time = getPreciseTime();
-        updateNotes(time);
-        updateProgress(time);
-
-        const isAllNotesJudged = notes.length > 0 && notes.every(n => n.judged);
-        const isTimeOver = time >= Math.max(getDuration(), lastNoteTimestamp + 1.2);
-
-        if (isAllNotesJudged || isTimeOver) {
-          finishGame();
-          return;
-        }
-
         animationId = requestAnimationFrame(tick);
+        const time = getCurrentTime();
+
+        if (!isRecordingMode) {
+          updateNotes(time);
+        }
+        updateProgress();
+
+        if (time >= getDuration() - 0.05) {
+          if (isRecordingMode) {
+            toggleRecordingPause(true);
+          } else {
+            finishGame();
+          }
+        }
       }
 
-      function updateProgress(time) {
+      function updateProgress() {
+        const time = getCurrentTime();
         const duration = getDuration();
         $("songTime").textContent = `${formatTime(time)} / ${formatTime(duration)}`;
 
@@ -1200,72 +1562,91 @@
       }
 
       function stopMedia() {
-        isAudioRunning = false;
-        try { music.pause(); } catch {}
-        try { video.pause(); } catch {}
+        try {
+          video.pause();
+        } catch {}
       }
 
-      async function playMedia(fromTime = 0) {
-        const musicEnabled = $("musicEnabled").checked;
-        music.volume = Number($("volume").value) / 100;
-        music.muted = !musicEnabled;
+      async function playMedia() {
+        const soundEnabled = $("musicEnabled").checked;
+        video.volume = Number($("volume").value) / 100;
+        video.muted = !soundEnabled;
 
         try {
-          if (music.readyState >= 1) {
-            music.currentTime = fromTime;
-          }
-        } catch {}
-
-        try {
-          if (musicEnabled && music.src) {
-            await music.play();
-            isAudioRunning = true;
-          }
+          await video.play();
         } catch {
-          isAudioRunning = false;
+          video.muted = true;
+          try {
+            await video.play();
+            showFeedback("已静音播放，可开启声音", "#ffb36b");
+          } catch {
+            showFeedback("请点击屏幕开始", "#ff6078");
+          }
+        }
+      }
+
+      function togglePause() {
+        if (isRecordingMode) {
+          toggleRecordingPause();
+          return;
         }
 
-        try {
-          if (video.readyState >= 1) {
-            video.currentTime = fromTime;
-          }
-          await video.play();
-        } catch {}
+        if (!gameStarted) {
+          showOverlay("pause");
+          return;
+        }
 
-        clockBaseTime = performance.now() - (fromTime * 1000);
-        clockAudioOffset = fromTime;
-      }
+        if (finished || leaving) return;
 
-      function gentleSyncVideo(time) {
-        const now = performance.now();
-        if (now - lastVideoSyncTime < 2500) return;
-        lastVideoSyncTime = now;
-
-        if (video.readyState >= 2 && !video.paused) {
-          const diff = Math.abs(video.currentTime - time);
-          if (diff > 0.8) {
-            try {
-              video.currentTime = time % (Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 9999);
-            } catch {}
-          }
+        if (paused) {
+          resumeGame();
+        } else {
+          pauseGame();
         }
       }
 
       function pauseGame() {
-        if (!gameStarted || paused || finished) return;
+        if (paused) return;
         paused = true;
-        clockAudioOffset = getPreciseTime();
         cancelAnimationFrame(animationId);
         stopMedia();
+        $("pauseBtn").innerHTML = `${ICONS.play} 继续`;
         showOverlay("pause");
       }
 
       async function resumeGame() {
-        if (!gameStarted || finished || leaving) return;
         hideOverlays();
         paused = false;
-        await playMedia(clockAudioOffset);
+        gameStarted = true;
+        $("pauseBtn").innerHTML = `${ICONS.pause} 暂停`;
+        await playMedia();
+        cancelAnimationFrame(animationId);
         animationId = requestAnimationFrame(tick);
+      }
+
+      function restartGame() {
+        hideOverlays();
+        cancelAnimationFrame(animationId);
+        stopMedia();
+
+        gameStarted = false;
+        paused = true;
+        finished = false;
+        leaving = false;
+
+        try {
+          video.currentTime = 0;
+        } catch {}
+
+        clearNotes();
+        updateStats();
+        updateProgress();
+
+        $("centerMessage").style.display = "flex";
+        $("centerMessage").innerHTML = "<h2>SAN RHYTHM</h2><p>准备好了吗？重新挑战你的最高分。</p>";
+        $("startBtn").innerHTML = `${ICONS.play} 开始游戏`;
+        $("startBtn").disabled = false;
+        $("pauseBtn").innerHTML = `${ICONS.pause} 暂停`;
       }
 
       async function startGame() {
@@ -1286,48 +1667,17 @@
         hideOverlays();
 
         $("centerMessage").style.display = "none";
-        $("startBtn").textContent = "▶ 游戏进行中";
+        $("startBtn").innerHTML = `${ICONS.play} 游戏进行中`;
         $("startBtn").disabled = true;
+        $("pauseBtn").innerHTML = `${ICONS.pause} 暂停`;
 
-        await playMedia(0);
-        animationId = requestAnimationFrame(tick);
-      }
+        try {
+          video.currentTime = 0;
+        } catch {}
 
-      /* ------------------------------------------------------------------
-       * 3. 重开逻辑（游戏完全重置，按钮恢复为“开始游戏”）
-       * ------------------------------------------------------------------ */
-      function restartGame() {
+        await playMedia();
         cancelAnimationFrame(animationId);
-        stopMedia();
-
-        gameStarted = false;
-        paused = true;
-        finished = false;
-        leaving = false;
-
-        clockAudioOffset = 0;
-        clockBaseTime = 0;
-
-        try { music.currentTime = 0; } catch {}
-        try { video.currentTime = 0; } catch {}
-
-        score = 0;
-        combo = 0;
-        maxCombo = 0;
-        totalJudged = 0;
-        accuracyPoints = 0;
-
-        clearNotes();
-        updateStats();
-        updateProgress(0);
-
-        hideOverlays();
-
-        $("centerMessage").style.display = "flex";
-        $("centerMessage").innerHTML = "<h2>READY?</h2><p>已重置完毕。点击下方「开始游戏」挑战最高分！</p>";
-
-        $("startBtn").textContent = "▶ 开始游戏";
-        $("startBtn").disabled = false;
+        animationId = requestAnimationFrame(tick);
       }
 
       function finishGame() {
@@ -1350,37 +1700,213 @@
           `最高 COMBO：${maxCombo} · ` +
           `准确率：${accuracy}%`;
 
-        $("startBtn").textContent = "▶ 开始游戏";
+        $("startBtn").innerHTML = `${ICONS.play} 再次挑战`;
         $("startBtn").disabled = false;
+        $("pauseBtn").innerHTML = `${ICONS.pause} 暂停`;
         showOverlay("result");
       }
 
       function requestExit() {
-        if (gameStarted && !paused && !finished) {
-          pauseGame();
-        } else {
-          stopMedia();
-          cancelAnimationFrame(animationId);
-        }
+        stopMedia();
+        cancelAnimationFrame(animationId);
         showOverlay("exit");
       }
 
+      function confirmExit() {
+        leaving = true;
+        finished = true;
+        paused = true;
+        gameStarted = false;
+        cancelAnimationFrame(animationId);
+
+        try {
+          video.pause();
+          video.removeAttribute("src");
+          video.load();
+        } catch {}
+
+        clearNotes();
+        window.location.replace("games.html");
+      }
+
+      function toggleRecordingPause(forcePause = false) {
+        if (!isRecordingMode) return;
+
+        if (isRecPaused && !forcePause) {
+          isRecPaused = false;
+          paused = false;
+          $("recDot").classList.remove("paused");
+          $("recStatusText").textContent = "正在录制节拍 (敲击D/F/J/K实时打点)";
+          $("recPauseToggleBtn").innerHTML = `${ICONS.pause} 暂停录制`;
+          $("pauseBtn").innerHTML = `${ICONS.pause} 暂停`;
+          playMedia();
+          cancelAnimationFrame(animationId);
+          animationId = requestAnimationFrame(tick);
+          showFeedback("继续录制", "#72d8ff");
+        } else {
+          isRecPaused = true;
+          paused = true;
+          stopMedia();
+          cancelAnimationFrame(animationId);
+          $("recDot").classList.add("paused");
+          $("recStatusText").textContent = "录制已暂停 (可在此打点、加字或拖动进度)";
+          $("recPauseToggleBtn").innerHTML = `${ICONS.play} 继续录制`;
+          $("pauseBtn").innerHTML = `${ICONS.play} 继续`;
+
+          $("markerTimeInput").value = formatTime(getCurrentTime());
+          showFeedback("录制暂停", "#ffaa00");
+        }
+      }
+
+      $("recPauseToggleBtn").addEventListener("click", () => toggleRecordingPause());
+
+      document.querySelectorAll(".beat-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const lane = Number(btn.dataset.recLane);
+          addRecordedBeat(lane);
+        });
+      });
+
+      $("pauseAdminBtn").addEventListener("click", () => {
+        $("adminPwdInput").value = "";
+        $("adminAuthTip").style.display = "none";
+        showOverlay("adminAuth");
+      });
+
+      $("adminAuthBack").addEventListener("click", () => showOverlay("pause"));
+
+      $("adminAuthConfirm").addEventListener("click", () => {
+        const pwd = $("adminPwdInput").value.trim();
+        if (pwd === ADMIN_PWD) {
+          showOverlay("adminMenu");
+        } else {
+          $("adminAuthTip").style.display = "block";
+        }
+      });
+
+      $("adminMenuBack").addEventListener("click", () => showOverlay("pause"));
+
+      $("startRecordingModeBtn").addEventListener("click", async () => {
+        hideOverlays();
+        isRecordingMode = true;
+        isRecPaused = false;
+        tempRecordedNotes = [];
+        tempRecordedMarkers = [...activeTextMarkers];
+
+        $("normalBottomBar").style.display = "none";
+        $("recorderConsole").classList.add("active");
+        $("recPauseToggleBtn").innerHTML = `${ICONS.pause} 暂停录制`;
+        $("recDot").classList.remove("paused");
+        $("recStatusText").textContent = "正在录制节拍 (敲击D/F/J/K实时打点)";
+        updateRecorderConsoleUI();
+
+        clearNotes();
+        paused = false;
+        gameStarted = true;
+
+        try { video.currentTime = 0; } catch {}
+        await playMedia();
+
+        cancelAnimationFrame(animationId);
+        animationId = requestAnimationFrame(tick);
+      });
+
+      $("addCurrentTimeBtn").addEventListener("click", () => {
+        $("markerTimeInput").value = formatTime(getCurrentTime());
+      });
+
+      $("addMarkerBtn").addEventListener("click", () => {
+        const timeVal = $("markerTimeInput").value.trim();
+        const textVal = $("markerTextInput").value.trim();
+        if (!textVal) {
+          alert("请输入要展示的文字内容");
+          return;
+        }
+
+        const sec = parseTimeToSeconds(timeVal);
+        tempRecordedMarkers.push({ time: sec, text: textVal });
+        tempRecordedMarkers.sort((a, b) => a.time - b.time);
+
+        updateRecorderConsoleUI();
+        showFeedback(`已加文字: [${formatTime(sec)}]`, "#72d8ff");
+        $("markerTextInput").value = "";
+      });
+
+      /* ------------------------------------------------------------------
+       * 结束录制：自动推送到 Firebase 云端实现全网同步
+       * ------------------------------------------------------------------ */
+      $("finishRecordBtn").addEventListener("click", () => {
+        stopMedia();
+        isRecordingMode = false;
+        isRecPaused = false;
+
+        tempRecordedNotes.sort((a, b) => a.time - b.time);
+        localStorage.setItem(CUSTOM_BEATMAP_KEY, JSON.stringify(tempRecordedNotes));
+        localStorage.setItem(TEXT_MARKERS_KEY, JSON.stringify(tempRecordedMarkers));
+        activeTextMarkers = tempRecordedMarkers;
+
+        if (db) {
+          showFeedback("正在同步至云端...", "#72d8ff");
+          db.ref("sanRhythmData").set({
+            beatmap: tempRecordedNotes,
+            markers: tempRecordedMarkers,
+            updatedAt: Date.now()
+          }).then(() => {
+            alert(`🎉 录制完成并已全网实时同步！\n共保存 ${tempRecordedNotes.length} 个音符按键，${tempRecordedMarkers.length} 条文字标记。\n所有打开网页的玩家都将立即体验此版本！`);
+          }).catch(err => {
+            alert(`本地已保存，但 Firebase 云端同步失败: ${err.message}`);
+          });
+        } else {
+          alert(`本地已保存！\n提示：Firebase 连接未就绪。`);
+        }
+
+        $("recorderConsole").classList.remove("active");
+        $("normalBottomBar").style.display = "block";
+        restartGame();
+      });
+
+      $("cancelRecordBtn").addEventListener("click", () => {
+        stopMedia();
+        isRecordingMode = false;
+        isRecPaused = false;
+        $("recorderConsole").classList.remove("active");
+        $("normalBottomBar").style.display = "block";
+        restartGame();
+      });
+
+      $("clearCustomBeatmapBtn").addEventListener("click", () => {
+        if (confirm("确定要清空自定义节拍和文字标记，恢复系统默认吗？此操作也会清除云端同步！")) {
+          localStorage.removeItem(CUSTOM_BEATMAP_KEY);
+          localStorage.removeItem(TEXT_MARKERS_KEY);
+          activeTextMarkers = [];
+
+          if (db) {
+            db.ref("sanRhythmData").remove();
+          }
+
+          alert("已恢复系统默认！");
+          showOverlay("pause");
+        }
+      });
+
       function openSettings() {
         settingsReturnTo = "pause";
-        $("musicEnabled").checked = !music.muted;
-        $("volume").value = String(Math.round(music.volume * 100));
+        $("musicEnabled").checked = !video.muted;
+        $("volume").value = String(Math.round(video.volume * 100));
         showOverlay("settings");
       }
 
       function saveSettings() {
-        music.volume = Number($("volume").value) / 100;
-        music.muted = !$("musicEnabled").checked;
+        video.volume = Number($("volume").value) / 100;
+        video.muted = !$("musicEnabled").checked;
 
-        if (music.muted) {
-          music.pause();
-          isAudioRunning = false;
-        } else if (gameStarted && !paused && !finished) {
-          music.play().then(() => { isAudioRunning = true; }).catch(() => {});
+        if (video.muted) {
+          $("musicBtn").innerHTML = `${ICONS.mute} 静音`;
+        } else {
+          $("musicBtn").innerHTML = `${ICONS.sound} 声音`;
+          if (gameStarted && !paused && !finished) {
+            video.play().catch(() => {});
+          }
         }
 
         if (settingsReturnTo === "pause") {
@@ -1390,11 +1916,10 @@
         }
       }
 
-      /* ------------------------------------------------------------------
-       * 4. 手机物理返回键 / 手势侧滑返回拦截
-       * ------------------------------------------------------------------ */
       function pushHistoryState() {
-        history.pushState({ inGame: true }, "", window.location.href);
+        try {
+          history.pushState({ inGame: true }, "", window.location.href);
+        } catch {}
       }
 
       pushHistoryState();
@@ -1405,57 +1930,46 @@
         requestExit();
       });
 
-      /* ------------------------------------------------------------------
-       * 5. 事件绑定（全部统一使用瞬间切页函数）
-       * ------------------------------------------------------------------ */
+      // 绑定事件
+      $("loaderExitBtn").addEventListener("click", confirmExit);
+
       $("acceptNotice").addEventListener("click", () => {
         hideOverlays();
         $("centerMessage").style.display = "flex";
-        $("centerMessage").innerHTML = "<h2>READY?</h2><p>点击下方「开始游戏」即可开始挑战。</p>";
-        try {
-          music.play().then(() => music.pause()).catch(() => {});
-        } catch {}
+        $("centerMessage").innerHTML = "<h2>READY?</h2><p>点击下方「开始游戏」即可挑战。</p>";
       });
 
       $("noticeExit").addEventListener("click", requestExit);
 
       $("startBtn").addEventListener("click", () => {
-        if (!gameStarted || finished) {
+        if (finished) {
+          restartGame();
+          startGame();
+        } else {
           startGame();
         }
       });
 
-      $("pauseBtn").addEventListener("click", () => {
-        if (paused && gameStarted && !finished) {
-          resumeGame();
-        } else {
-          pauseGame();
-        }
-      });
-
+      $("pauseBtn").addEventListener("click", togglePause);
       $("restartBtn").addEventListener("click", restartGame);
       $("pauseRestartBtn").addEventListener("click", restartGame);
-      $("resultRetry").addEventListener("click", restartGame);
-
       $("resumeBtn").addEventListener("click", resumeGame);
       $("settingsBtn").addEventListener("click", openSettings);
       $("saveSettings").addEventListener("click", saveSettings);
       $("settingsBack").addEventListener("click", () => showOverlay("pause"));
 
       $("musicBtn").addEventListener("click", () => {
-        if (music.muted) {
-          music.muted = false;
+        if (video.muted) {
+          video.muted = false;
           $("musicEnabled").checked = true;
-          $("musicBtn").textContent = "♫ 音乐";
+          $("musicBtn").innerHTML = `${ICONS.sound} 声音`;
           if (gameStarted && !paused) {
-            music.play().then(() => { isAudioRunning = true; }).catch(() => {});
+            video.play().catch(() => {});
           }
         } else {
-          music.muted = true;
+          video.muted = true;
           $("musicEnabled").checked = false;
-          $("musicBtn").textContent = "♫ 静音";
-          music.pause();
-          isAudioRunning = false;
+          $("musicBtn").innerHTML = `${ICONS.mute} 静音`;
         }
       });
 
@@ -1472,8 +1986,11 @@
         }
       });
 
-      // 弹窗确认返回大厅：直接调用秒切函数
-      $("confirmExit").addEventListener("click", instantExitToLobby);
+      $("confirmExit").addEventListener("click", confirmExit);
+      $("resultRetry").addEventListener("click", () => {
+        restartGame();
+        startGame();
+      });
 
       laneButtons.forEach(button => {
         button.addEventListener("pointerdown", event => {
@@ -1483,6 +2000,8 @@
       });
 
       document.addEventListener("keydown", event => {
+        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
+
         if (event.repeat) return;
         const key = event.key.toLowerCase();
 
@@ -1494,7 +2013,7 @@
           } else if (overlays.pause.classList.contains("show")) {
             resumeGame();
           } else {
-            pauseGame();
+            togglePause();
           }
           return;
         }
@@ -1508,34 +2027,37 @@
       $("seek").addEventListener("input", () => {
         const duration = getDuration();
         const target = (Number($("seek").value) / 1000) * duration;
-        clockAudioOffset = target;
-        clockBaseTime = performance.now() - (target * 1000);
-        try { music.currentTime = target; } catch {}
-        try { video.currentTime = target; } catch {}
-        updateProgress(target);
+        try {
+          video.currentTime = Math.min(target, duration);
+        } catch {}
+        updateProgress();
+
+        if (isRecordingMode && isRecPaused) {
+          $("markerTimeInput").value = formatTime(video.currentTime);
+        }
       });
 
       $("volume").addEventListener("input", () => {
-        music.volume = Number($("volume").value) / 100;
+        video.volume = Number($("volume").value) / 100;
       });
 
       $("musicEnabled").addEventListener("change", () => {
-        music.muted = !$("musicEnabled").checked;
-        if (music.muted) {
-          music.pause();
-          isAudioRunning = false;
+        video.muted = !$("musicEnabled").checked;
+        $("musicBtn").innerHTML = video.muted ? `${ICONS.mute} 静音` : `${ICONS.sound} 声音`;
+      });
+
+      video.addEventListener("timeupdate", updateProgress);
+      video.addEventListener("ended", () => {
+        if (isRecordingMode) {
+          toggleRecordingPause(true);
+        } else if (gameStarted && !finished) {
+          finishGame();
         }
       });
 
-      setInterval(() => {
-        if (gameStarted && !paused && !finished && !leaving) {
-          gentleSyncVideo(getPreciseTime());
-        }
-      }, 1500);
-
       updateStats();
-      updateProgress(0);
+      updateProgress();
     })();
   </script>
 </body>
-</html>
+  </html>
