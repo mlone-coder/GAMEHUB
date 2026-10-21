@@ -2,13 +2,12 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#080b18">
-<meta name="description" content="GAME HUB 游戏大厅，发现并畅玩精选小游戏。">
 <title>GAME HUB — 游戏大厅</title>
 <style>
 :root {
+    color-scheme: dark;
     --bg: #080b18;
     --panel: rgba(18, 24, 47, .82);
     --panel-hover: rgba(29, 39, 72, .94);
@@ -21,1626 +20,462 @@
     --radius: 18px;
     --drawer-w: clamp(280px, 33vw, 420px);
 }
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* ✨ 全局彻底禁止双击放大、长按选区以及页面上滑/下拉橡皮筋反弹 */
-html, body {
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html {
+    background-color: #080b18 !important;
+    color: var(--text);
+    scroll-behavior: smooth;
+    scrollbar-color: #353c60 #080b18;
+    overscroll-behavior-y: none;
     touch-action: manipulation;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
-    scroll-behavior: smooth;
-    scrollbar-color: #353c60 #080b18;
-    overscroll-behavior-y: none; /* 禁止屏幕拉扯反弹 */
 }
-
-input, textarea {
-    -webkit-user-select: text;
-    user-select: text;
-}
-
 body {
-    min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100vh; min-height: 100dvh;
+    background-color: #080b18 !important;
     background: var(--bg);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
     overflow-x: hidden;
 }
+html.scroll-locked, body.scroll-locked { overflow: hidden !important; height: 100% !important; }
+input, textarea { -webkit-user-select: text; user-select: text; }
+button, input, textarea, select { font: inherit; color: inherit; touch-action: manipulation; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 
-button, input, textarea, select {
-    font: inherit;
-    color: inherit;
-    touch-action: manipulation;
-}
-
-button:focus-visible, a:focus-visible, input:focus-visible {
-    outline: 2px solid var(--cyan);
-    outline-offset: 3px;
-}
-
-/* ================= 动态背景 ================= */
+/* 动态背景 */
 .background {
-    position: fixed;
-    inset: 0;
-    z-index: -2;
-    overflow: hidden;
-    background: radial-gradient(ellipse at 50% 0%, #171642 0%, transparent 55%), #080b18;
-    pointer-events: none;
+    position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: -2; overflow: hidden;
+    background: radial-gradient(ellipse at 50% 0%, #171642 0%, transparent 55%), #080b18; pointer-events: none;
 }
-
 .background::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    opacity: .3;
-    background-image:
-        linear-gradient(rgba(142, 164, 255, .05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(142, 164, 255, .05) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: linear-gradient(to bottom, black, transparent 85%);
-    -webkit-mask-image: linear-gradient(to bottom, black, transparent 85%);
+    content: ""; position: absolute; inset: 0; opacity: .3;
+    background-image: linear-gradient(rgba(142, 164, 255, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(142, 164, 255, .05) 1px, transparent 1px);
+    background-size: 44px 44px; mask-image: linear-gradient(to bottom, black, transparent 85%); -webkit-mask-image: linear-gradient(to bottom, black, transparent 85%);
 }
+.orb { position: absolute; width: 440px; height: 440px; border-radius: 50%; filter: blur(100px); opacity: .25; will-change: transform; }
+.orb.one { background: #673aff; top: -200px; left: -100px; animation: floatOne 16s ease-in-out infinite alternate; }
+.orb.two { background: #087cff; right: -150px; top: 350px; animation: floatTwo 18s ease-in-out infinite alternate; }
+@keyframes floatOne { to { transform: translate(160px, 160px) scale(1.15); filter: blur(110px) hue-rotate(30deg); } }
+@keyframes floatTwo { to { transform: translate(-120px, -150px) scale(1.12); filter: blur(110px) hue-rotate(-25deg); } }
+body.static-bg .orb { animation: none !important; }
 
-.orb {
-    position: absolute;
-    width: 440px;
-    height: 440px;
-    border-radius: 50%;
-    filter: blur(100px);
-    opacity: .25;
-    will-change: transform;
-}
-
-.orb.one {
-    background: #673aff;
-    top: -200px;
-    left: -100px;
-    animation: floatOne 16s ease-in-out infinite alternate;
-}
-
-.orb.two {
-    background: #087cff;
-    right: -150px;
-    top: 350px;
-    animation: floatTwo 18s ease-in-out infinite alternate;
-}
-
-@keyframes floatOne {
-    to { transform: translate(160px, 160px) scale(1.15); filter: blur(110px) hue-rotate(30deg); }
-}
-
-@keyframes floatTwo {
-    to { transform: translate(-120px, -150px) scale(1.12); filter: blur(110px) hue-rotate(-25deg); }
-}
-
-body.static-bg .orb {
-    animation: none !important;
-}
-
-/* ================= 主页冲屏连贯联动动效 ================= */
+/* 连贯动画与容器 */
 .app-wrapper {
-    animation: contentEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-    transform-origin: center center;
+    position: relative; width: 100%; min-height: 100vh; min-height: 100dvh; background: transparent;
+    animation: contentEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+@keyframes contentEnter { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+body.leaving-to-home .app-wrapper { animation: contentExitToHome 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards !important; pointer-events: none; }
+@keyframes contentExitToHome { to { opacity: 0; transform: scale(0.9); } }
 
-@keyframes contentEnter {
-    from { opacity: 0; transform: scale(0.92); filter: blur(10px); }
-    to { opacity: 1; transform: scale(1); filter: blur(0); }
-}
-
-body.leaving-to-home .app-wrapper {
-    animation: contentExitToHome 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
-    pointer-events: none;
-}
-
-@keyframes contentExitToHome {
-    to { opacity: 0; transform: scale(0.88); filter: blur(8px); }
-}
-
-/* ================= 实时 FPS 监控 ================= */
 #fpsMeter {
-    position: fixed;
-    top: 18px;
-    right: 20px;
-    z-index: 60;
-    padding: 4px 10px;
-    border-radius: 8px;
-    background: rgba(10, 16, 38, 0.85);
-    border: 1px solid rgba(115, 215, 255, 0.4);
-    color: #73d7ff;
-    font-size: 11px;
-    font-family: Consolas, monospace;
-    font-weight: 700;
-    box-shadow: 0 0 12px rgba(115, 215, 255, 0.2);
-    pointer-events: none;
-    display: none;
+    position: fixed; top: 18px; right: 20px; z-index: 60; padding: 4px 10px; border-radius: 8px;
+    background: rgba(10, 16, 38, 0.85); border: 1px solid rgba(115, 215, 255, 0.4); color: #73d7ff;
+    font-size: 11px; font-family: Consolas, monospace; font-weight: 700; display: none; pointer-events: none;
 }
 
-/* ================= 顶部导航 ================= */
+/* 顶部导航 */
 .header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    height: 68px;
-    padding: 0 clamp(16px, 4vw, 45px);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(8, 11, 24, .85);
-    border-bottom: 1px solid rgba(139, 163, 255, .12);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    position: sticky; top: 0; z-index: 50; height: 68px; padding: 0 clamp(16px, 4vw, 45px);
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(8, 11, 24, .88); border-bottom: 1px solid rgba(139, 163, 255, .12);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
 }
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
+.header-left { display: flex; align-items: center; gap: 15px; }
 .menu-btn {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.04);
-    cursor: pointer;
-    transition: all 0.25s ease;
+    width: 40px; height: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    gap: 5px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.04); cursor: pointer; transition: all 0.25s ease;
 }
-
-.menu-btn:hover {
-    background: rgba(104, 111, 255, 0.16);
-    border-color: rgba(137, 159, 255, 0.5);
-    box-shadow: 0 0 14px rgba(91, 158, 255, 0.35);
-}
-
-.menu-line {
-    width: 20px;
-    height: 2px;
-    border-radius: 2px;
-    background: #d8e2ff;
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: white;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.brand:hover {
-    transform: scale(1.02);
-}
-
+.menu-btn:hover { background: rgba(104, 111, 255, 0.16); border-color: rgba(137, 159, 255, 0.5); }
+.menu-line { width: 20px; height: 2px; border-radius: 2px; background: #d8e2ff; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: white; cursor: pointer; }
 .brand-mark {
-    width: 34px;
-    height: 34px;
-    display: grid;
-    place-items: center;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #8662ff, #287fff);
-    box-shadow: 0 0 18px rgba(92, 93, 255, .3);
+    width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px;
+    background: linear-gradient(135deg, #8662ff, #287fff); box-shadow: 0 0 18px rgba(92, 93, 255, .3);
 }
+.brand-mark svg { width: 20px; height: 20px; }
+.brand-name { font-size: 18px; font-weight: 900; letter-spacing: 1.5px; white-space: nowrap; }
+.brand-name span { color: #8ba8ff; }
 
-.brand-mark svg {
-    width: 20px;
-    height: 20px;
-}
-
-.brand-name {
-    font-size: 18px;
-    font-weight: 900;
-    letter-spacing: 1.5px;
-    white-space: nowrap;
-}
-
-.brand-name span {
-    color: #8ba8ff;
-}
-
-/* ================= ✨ 抽屉侧边栏（完全独立滚动隔离体系） ================= */
+/* 侧边栏抽屉与滚动隔离 */
 .drawer-mask {
-    position: fixed;
-    inset: 0;
-    z-index: 90;
-    background: rgba(3, 5, 16, 0.65);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.35s ease, visibility 0.35s ease;
-    touch-action: none; /* 遮罩层绝对禁止滚动传递 */
+    position: fixed; inset: 0; z-index: 90; background: rgba(3, 5, 16, 0.72); backdrop-filter: blur(6px);
+    opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease; touch-action: none;
 }
-
-.drawer-mask.active {
-    opacity: 1;
-    visibility: visible;
-}
-
+.drawer-mask.active { opacity: 1; visibility: visible; }
 .drawer-card {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    height: 100vh;
-    height: 100dvh;
-    z-index: 100;
-    width: var(--drawer-w);
-    background: linear-gradient(165deg, rgba(18, 24, 48, 0.96), rgba(9, 13, 29, 0.98));
-    border-right: 1px solid rgba(139, 163, 255, 0.2);
-    box-shadow: 15px 0 50px rgba(0, 0, 0, 0.65);
-    display: flex;
-    flex-direction: column;
-    transform: translateX(-100%);
-    transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
-    overscroll-behavior: contain !important; /* 滚动边界强制包容 */
+    position: fixed; top: 0; left: 0; bottom: 0; height: 100vh; height: 100dvh; z-index: 100;
+    width: var(--drawer-w); background: linear-gradient(165deg, rgba(18, 24, 48, 0.98), rgba(9, 13, 29, 0.99));
+    border-right: 1px solid rgba(139, 163, 255, 0.2); box-shadow: 15px 0 50px rgba(0, 0, 0, 0.75);
+    display: flex; flex-direction: column; transform: translateX(-100%); transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
+    overscroll-behavior: contain !important;
 }
-
-.drawer-card.open {
-    transform: translateX(0);
-}
-
+.drawer-card.open { transform: translateX(0); }
 .drawer-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 22px 24px;
-    border-bottom: 1px solid rgba(139, 163, 255, 0.12);
-    flex-shrink: 0;
-    touch-action: none;
+    display: flex; align-items: center; justify-content: space-between; padding: 22px 24px;
+    border-bottom: 1px solid rgba(139, 163, 255, 0.12); flex-shrink: 0; touch-action: none;
 }
-
 .drawer-brand {
-    font-size: 19px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    background: linear-gradient(120deg, #ffffff, #9ab5ff, #b58aff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
+    font-size: 19px; font-weight: 900; letter-spacing: 2px;
+    background: linear-gradient(120deg, #ffffff, #9ab5ff, #b58aff); -webkit-background-clip: text; background-clip: text;
+    color: transparent; border: none; background-color: transparent; cursor: pointer;
 }
-
 .drawer-close {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.05);
-    color: #929bb8;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05); color: #929bb8; display: grid; place-items: center; cursor: pointer; transition: all 0.2s ease;
 }
-
-.drawer-close:hover {
-    color: #fff;
-    border-color: #ff6b81;
-    background: rgba(255, 75, 100, 0.15);
-    transform: rotate(90deg);
-}
-
-/* 抽屉内部独立顺畅滚动 */
+.drawer-close:hover { color: #fff; border-color: #ff6b81; background: rgba(255, 75, 100, 0.15); transform: rotate(90deg); }
 .drawer-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    overscroll-behavior: contain !important;
-    -webkit-overflow-scrolling: touch;
+    flex: 1; overflow-y: auto; padding: 18px 14px; display: flex; flex-direction: column; gap: 8px;
+    overscroll-behavior: contain !important; -webkit-overflow-scrolling: touch;
 }
-
 .nav-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 13px 16px;
-    border-radius: 12px;
-    border: 1px solid transparent;
-    background: rgba(255, 255, 255, 0.02);
-    color: #dbe4ff;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
+    display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 13px 16px;
+    border-radius: 12px; border: 1px solid transparent; background: rgba(255, 255, 255, 0.02);
+    color: #dbe4ff; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: left;
 }
+.nav-item-left { display: flex; align-items: center; gap: 12px; }
+.nav-icon { width: 20px; height: 20px; color: #8da5ff; flex-shrink: 0; }
+.nav-item:hover { background: rgba(104, 111, 255, 0.12); border-color: rgba(139, 163, 255, 0.25); color: #ffffff; transform: translateX(4px); }
+.accordion-arrow { width: 16px; height: 16px; color: #7d88ab; transition: transform 0.3s ease; }
+.accordion-wrap.expanded .accordion-arrow { transform: rotate(180deg); }
 
-.nav-item-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.nav-icon {
-    width: 20px;
-    height: 20px;
-    color: #8da5ff;
-    flex-shrink: 0;
-}
-
-.nav-item:hover {
-    background: rgba(104, 111, 255, 0.12);
-    border-color: rgba(139, 163, 255, 0.25);
-    color: #ffffff;
-    transform: translateX(4px);
-}
-
-.accordion-arrow {
-    width: 16px;
-    height: 16px;
-    color: #7d88ab;
-    transition: transform 0.3s ease;
-}
-
-.accordion-wrap.expanded .accordion-arrow {
-    transform: rotate(180deg);
-}
-
+/* 抽屉游戏长方形圆角卡片 */
 .subgames-panel {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding-left: 28px;
+    max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column; gap: 8px; padding: 0 4px 0 12px;
 }
-
-.subgame-link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    color: #929bb8;
-    font-size: 13px;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.accordion-wrap.expanded .subgames-panel { padding: 8px 4px 12px 12px; }
+.subgame-card {
+    display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
+    border-radius: 12px; border: 1px solid rgba(139, 163, 255, 0.16); background: rgba(18, 26, 56, 0.75);
+    color: #dbe4ff; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.22s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-
-.subgame-link:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
-    padding-left: 16px;
+.subgame-card-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.subgame-card-icon {
+    width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 16px;
+    background: rgba(104, 111, 255, 0.14); border: 1px solid rgba(139, 163, 255, 0.22); flex-shrink: 0; overflow: hidden;
 }
-
-.drawer-footer {
-    padding: 16px;
-    border-top: 1px solid rgba(139, 163, 255, 0.12);
-    flex-shrink: 0;
-    touch-action: none;
+.subgame-card-icon img { width: 100%; height: 100%; object-fit: contain; }
+.subgame-card-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; color: #f2f4ff; }
+.subgame-card-arrow { width: 14px; height: 14px; color: #7d88ab; flex-shrink: 0; transition: transform 0.2s ease, color 0.2s ease; }
+.subgame-card:hover {
+    background: linear-gradient(135deg, rgba(104, 111, 255, 0.2), rgba(57, 135, 255, 0.16));
+    border-color: rgba(139, 163, 255, 0.45); transform: translateX(3px);
 }
+.subgame-card:hover .subgame-card-arrow { color: #73d7ff; transform: translateX(2px); }
 
+.drawer-footer { padding: 16px; border-top: 1px solid rgba(139, 163, 255, 0.12); flex-shrink: 0; touch-action: none; }
 .exit-btn {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 75, 100, 0.3);
-    background: rgba(255, 50, 75, 0.1);
-    color: #ff8595;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 9px;
-    transition: all 0.25s ease;
+    width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255, 75, 100, 0.3);
+    background: rgba(255, 50, 75, 0.1); color: #ff8595; font-size: 14px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 9px; transition: all 0.25s ease;
 }
+.exit-btn:hover { background: rgba(255, 50, 75, 0.22); border-color: #ff5e76; color: #ffffff; }
 
-.exit-btn:hover {
-    background: rgba(255, 50, 75, 0.22);
-    border-color: #ff5e76;
-    color: #ffffff;
-    box-shadow: 0 0 20px rgba(255, 75, 100, 0.35);
-}
-
-/* ================= 视图全屏滑动切换体系 ================= */
-.views-container {
-    position: relative;
-    width: 100%;
-    min-height: calc(100vh - 68px);
-}
-
+/* 页面全屏滑动切换体系 */
+.views-container { position: relative; width: 100%; min-height: calc(100vh - 68px); background: transparent; }
 .page-view {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translateX(45px);
-    transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, visibility 0.38s;
+    display: none; width: 100%; opacity: 0; transform: translateX(35px);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
-
-.page-view.active {
-    position: relative;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateX(0);
-}
-
-/* ✨ 禁止特定子页面异常上滑/拉扯反弹 */
-.subview-locked {
-    height: calc(100vh - 68px);
-    height: calc(100dvh - 68px);
-    overflow-y: auto;
-    overscroll-behavior: contain !important;
-}
-
-.container {
-    width: min(1320px, 100%);
-    margin: auto;
-    padding: 24px clamp(15px, 4vw, 30px) 75px;
-}
+.page-view.active { display: block; opacity: 1; transform: translateX(0); }
+.subview-locked { min-height: calc(100vh - 68px); overflow-y: auto; overscroll-behavior: contain !important; }
+.container { width: min(1320px, 100%); margin: auto; padding: 24px clamp(15px, 4vw, 30px) 75px; }
 
 .subview-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 25px;
-    padding-bottom: 16px;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; padding-bottom: 16px;
     border-bottom: 1px solid rgba(139, 163, 255, 0.12);
 }
-
 .subview-back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(139, 163, 255, 0.25);
-    background: rgba(255, 255, 255, 0.04);
-    color: #dbe4ff;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.22s ease;
-    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 10px;
+    border: 1px solid rgba(139, 163, 255, 0.25); background: rgba(255, 255, 255, 0.04); color: #dbe4ff;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.22s ease; white-space: nowrap;
 }
+.subview-back-btn:hover { background: rgba(104, 111, 255, 0.18); border-color: rgba(160, 190, 255, 0.6); color: #fff; transform: translateX(-3px); }
+.subview-back-btn svg { width: 16px; height: 16px; }
 
-.subview-back-btn:hover {
-    background: rgba(104, 111, 255, 0.18);
-    border-color: rgba(160, 190, 255, 0.6);
-    color: #fff;
-    transform: translateX(-3px);
+.subview-close-btn {
+    width: 38px; height: 38px; border-radius: 10px; border: 1px solid rgba(139, 163, 255, 0.25);
+    background: rgba(255, 255, 255, 0.04); color: #dbe4ff; display: grid; place-items: center; cursor: pointer;
+    transition: all 0.25s ease; flex-shrink: 0; margin-left: auto;
 }
-
-.subview-back-btn svg {
-    width: 16px;
-    height: 16px;
-}
-
-.subview-title {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    white-space: nowrap;
-}
+.subview-close-btn:hover { background: rgba(255, 75, 100, 0.18); border-color: #ff6b81; color: #fff; transform: rotate(90deg); }
+.subview-close-btn svg { width: 18px; height: 18px; }
+.subview-title { font-size: 20px; font-weight: 800; letter-spacing: 1px; white-space: nowrap; }
 
 .subview-card {
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 28px 24px;
-    border-radius: 22px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(14px);
+    max-width: 680px; margin: 0 auto; padding: 28px 24px; border-radius: 22px;
+    background: var(--panel); border: 1px solid var(--border); backdrop-filter: blur(14px);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
 }
-
-.avatar-profile-box {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    margin-bottom: 26px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(139, 163, 255, 0.1);
-}
-
+.avatar-profile-box { display: flex; align-items: center; gap: 18px; margin-bottom: 26px; padding-bottom: 20px; border-bottom: 1px solid rgba(139, 163, 255, 0.1); }
 .avatar-circle {
-    width: 68px;
-    height: 68px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-size: 30px;
-    background: linear-gradient(135deg, #7862ef, #2a5fcc);
-    box-shadow: 0 0 20px rgba(120, 98, 239, 0.4);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    flex-shrink: 0;
+    width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; font-size: 30px;
+    background: linear-gradient(135deg, #7862ef, #2a5fcc); border: 2px solid rgba(255, 255, 255, 0.2); flex-shrink: 0;
 }
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    font-size: 13px;
-    font-weight: 600;
-    color: #c4d2ff;
-    white-space: nowrap;
-}
-
+.form-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+.form-group label { font-size: 13px; font-weight: 600; color: #c4d2ff; white-space: nowrap; }
 .form-control {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 1px solid rgba(139, 163, 255, 0.22);
-    background: rgba(10, 16, 38, 0.7);
-    color: #ffffff;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.25s ease;
+    width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(139, 163, 255, 0.22);
+    background: rgba(10, 16, 38, 0.7); color: #ffffff; font-size: 14px; outline: none; transition: all 0.25s ease;
 }
+.form-control:focus { border-color: #8564ff; box-shadow: 0 0 16px rgba(133, 100, 255, 0.35); }
 
-.form-control:focus {
-    border-color: #8564ff;
-    box-shadow: 0 0 16px rgba(133, 100, 255, 0.35);
-}
-
-/* ================= 设置分类与手绘矢量图标 ================= */
+/* 设置分类与手绘图标 */
 .settings-section-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #73d7ff;
-    letter-spacing: 1px;
-    margin: 24px 0 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
+    font-size: 13px; font-weight: 700; color: #73d7ff; letter-spacing: 1px; margin: 24px 0 12px;
+    display: flex; align-items: center; gap: 8px; white-space: nowrap;
 }
-
-.settings-section-title:first-child {
-    margin-top: 0;
-}
-
-.section-icon-svg {
-    width: 18px;
-    height: 18px;
-    color: #73d7ff;
-    filter: drop-shadow(0 0 4px rgba(115, 215, 255, 0.5));
-    flex-shrink: 0;
-}
-
+.settings-section-title:first-child { margin-top: 0; }
+.section-icon-svg { width: 18px; height: 18px; color: #73d7ff; flex-shrink: 0; }
 .setting-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    border-radius: 14px;
-    border: 1px solid rgba(139, 163, 255, 0.12);
-    background: rgba(255, 255, 255, 0.02);
-    margin-bottom: 10px;
-    gap: 15px;
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-radius: 14px;
+    border: 1px solid rgba(139, 163, 255, 0.12); background: rgba(255, 255, 255, 0.02); margin-bottom: 10px; gap: 15px;
 }
+.setting-text-wrap { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.setting-label { font-weight: 600; color: #fff; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.setting-hint { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.setting-text-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    flex: 1;
-    min-width: 0;
-}
-
-.setting-label {
-    font-weight: 600;
-    color: #fff;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.setting-hint {
-    font-size: 11px;
-    color: var(--muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* 纯 CSS 语言切换卡片下滑展开 */
+/* 纯 CSS 语言卡片下滑展开 */
 .lang-card-wrap {
-    display: flex;
-    flex-direction: column;
-    border-radius: 14px;
-    border: 1px solid rgba(139, 163, 255, 0.15);
-    background: rgba(255, 255, 255, 0.02);
-    margin-bottom: 10px;
-    overflow: hidden;
+    display: flex; flex-direction: column; border-radius: 14px; border: 1px solid rgba(139, 163, 255, 0.15);
+    background: rgba(255, 255, 255, 0.02); margin-bottom: 10px; overflow: hidden;
 }
-
 .lang-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    width: 100%;
-    text-align: left;
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 16px;
+    cursor: pointer; background: transparent; border: none; width: 100%; text-align: left;
 }
-
-.lang-arrow {
-    width: 16px;
-    height: 16px;
-    color: #8da5ff;
-    transition: transform 0.3s ease;
-    flex-shrink: 0;
-}
-
-.lang-card-wrap.open .lang-arrow {
-    transform: rotate(180deg);
-}
-
+.lang-arrow { width: 16px; height: 16px; color: #8da5ff; transition: transform 0.3s ease; flex-shrink: 0; }
+.lang-card-wrap.open .lang-arrow { transform: rotate(180deg); }
 .lang-slide-content {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 0 14px;
+    max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    display: flex; flex-direction: column; gap: 6px; padding: 0 14px;
 }
-
-.lang-card-wrap.open .lang-slide-content {
-    max-height: 220px;
-    opacity: 1;
-    padding: 6px 14px 14px;
-}
-
+.lang-card-wrap.open .lang-slide-content { max-height: 220px; opacity: 1; padding: 6px 14px 14px; }
 .lang-option-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid rgba(139, 163, 255, 0.1);
-    background: rgba(12, 18, 42, 0.85);
-    color: #dbe4ff;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px;
+    border: 1px solid rgba(139, 163, 255, 0.1); background: rgba(12, 18, 42, 0.85); color: #dbe4ff; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s ease;
 }
-
-.lang-option-btn:hover {
-    background: rgba(104, 111, 255, 0.15);
-    border-color: rgba(139, 163, 255, 0.35);
-    color: #fff;
-}
-
+.lang-option-btn:hover { background: rgba(104, 111, 255, 0.15); color: #fff; }
 .lang-option-btn.active {
-    background: linear-gradient(135deg, rgba(120, 98, 239, 0.3), rgba(42, 95, 204, 0.3));
-    border-color: #73d7ff;
-    color: #73d7ff;
+    background: linear-gradient(135deg, rgba(120, 98, 239, 0.3), rgba(42, 95, 204, 0.3)); border-color: #73d7ff; color: #73d7ff;
 }
 
-/* 开关与复选框控件 */
+/* 开关与复选框 */
 .cyber-switch {
-    width: 44px;
-    height: 24px;
-    appearance: none;
-    -webkit-appearance: none;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    position: relative;
-    cursor: pointer;
-    outline: none;
-    transition: background 0.25s ease;
-    flex-shrink: 0;
+    width: 44px; height: 24px; appearance: none; -webkit-appearance: none; background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px; position: relative; cursor: pointer; outline: none; transition: background 0.25s ease; flex-shrink: 0;
 }
-
 .cyber-switch::before {
-    content: "";
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    top: 3px;
-    left: 3px;
-    background: #ffffff;
-    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%; top: 3px; left: 3px;
+    background: #ffffff; transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+.cyber-switch:checked { background: linear-gradient(135deg, #7862ef, #3987ff); }
+.cyber-switch:checked::before { transform: translateX(20px); }
+.cyber-checkbox { width: 20px; height: 20px; accent-color: #8564ff; cursor: pointer; flex-shrink: 0; }
 
-.cyber-switch:checked {
-    background: linear-gradient(135deg, #7862ef, #3987ff);
-}
-
-.cyber-switch:checked::before {
-    transform: translateX(20px);
-}
-
-.cyber-checkbox {
-    width: 20px;
-    height: 20px;
-    accent-color: #8564ff;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-/* ================= 模态弹窗（点击空白不关闭） ================= */
+/* 模态弹窗 */
 .modal-mask {
-    position: fixed;
-    inset: 0;
-    z-index: 150;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(3, 5, 18, 0.82);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    touch-action: none;
+    position: fixed; inset: 0; z-index: 150; display: flex; align-items: center; justify-content: center;
+    padding: 20px; background: rgba(3, 5, 18, 0.82); backdrop-filter: blur(10px);
+    opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; touch-action: none;
 }
-
-.modal-mask.show {
-    opacity: 1;
-    visibility: visible;
-}
-
+.modal-mask.show { opacity: 1; visibility: visible; }
 .modal-box {
-    width: min(440px, 100%);
-    padding: 30px 24px 24px;
-    border-radius: 20px;
-    border: 1px solid rgba(139, 163, 255, 0.3);
-    background: linear-gradient(155deg, #161d3c, #0c1126);
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.65);
-    text-align: center;
-    transform: scale(0.92) translateY(15px);
-    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    width: min(440px, 100%); padding: 30px 24px 24px; border-radius: 20px; border: 1px solid rgba(139, 163, 255, 0.3);
+    background: linear-gradient(155deg, #161d3c, #0c1126); box-shadow: 0 15px 50px rgba(0, 0, 0, 0.65); text-align: center;
+    transform: scale(0.92) translateY(15px); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-
-.modal-mask.show .modal-box {
-    transform: scale(1) translateY(0);
-}
-
+.modal-mask.show .modal-box { transform: scale(1) translateY(0); }
 .modal-box-icon {
-    width: 58px;
-    height: 58px;
-    margin: 0 auto 16px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-size: 26px;
-    background: rgba(104, 111, 255, 0.12);
-    border: 1px solid rgba(139, 163, 255, 0.25);
-    color: #a4baff;
+    width: 58px; height: 58px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 26px; background: rgba(104, 111, 255, 0.12); border: 1px solid rgba(139, 163, 255, 0.25); color: #a4baff;
 }
-
-.modal-box-icon.danger {
-    background: rgba(255, 60, 90, 0.12);
-    border-color: rgba(255, 60, 90, 0.3);
-    color: #ff687e;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 22px;
-}
-
+.modal-box-icon.danger { background: rgba(255, 60, 90, 0.12); border-color: rgba(255, 60, 90, 0.3); color: #ff687e; }
+.modal-actions { display: flex; gap: 12px; margin-top: 22px; }
 .modal-btn {
-    flex: 1;
-    padding: 11px;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
+    flex: 1; padding: 11px; border-radius: 10px; border: 1px solid transparent; font-size: 13px;
+    font-weight: 700; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
 }
+.modal-btn.cancel { border-color: rgba(139, 163, 255, 0.25); background: rgba(255, 255, 255, 0.05); color: #dbe4ff; }
+.modal-btn.danger { background: linear-gradient(135deg, #e63946, #b01925); color: white; }
+.modal-btn.primary { background: linear-gradient(135deg, #6752db, #326bd8); color: white; }
 
-.modal-btn.cancel {
-    border-color: rgba(139, 163, 255, 0.25);
-    background: rgba(255, 255, 255, 0.05);
-    color: #dbe4ff;
-}
-
-.modal-btn.danger {
-    background: linear-gradient(135deg, #e63946, #b01925);
-    color: white;
-}
-
-.modal-btn.primary {
-    background: linear-gradient(135deg, #6752db, #326bd8);
-    color: white;
-}
-
-/* ================= 全屏游戏专属详情页 ================= */
+/* 全屏游戏详情卡片 */
 .game-detail-card {
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 24px 22px;
-    border-radius: 22px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(14px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+    max-width: 680px; margin: 0 auto; padding: 24px 22px; border-radius: 22px;
+    background: var(--panel); border: 1px solid var(--border); backdrop-filter: blur(14px); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
 }
-
 .detail-view-banner {
-    position: relative;
-    height: 140px;
-    display: grid;
-    place-items: center;
-    border-radius: 16px;
-    margin-bottom: 20px;
-    background: radial-gradient(ellipse at 50% 100%, rgba(103, 82, 219, .4), transparent 70%),
-                linear-gradient(135deg, #182247, #0e1733);
+    position: relative; height: 140px; display: grid; place-items: center; border-radius: 16px; margin-bottom: 20px;
+    background: radial-gradient(ellipse at 50% 100%, rgba(103, 82, 219, .4), transparent 70%), linear-gradient(135deg, #182247, #0e1733);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
-
-.detail-view-symbol {
-    font-size: 64px;
-    filter: drop-shadow(0 10px 18px rgba(0,0,0,0.5));
-}
-
+.detail-view-symbol { font-size: 64px; filter: drop-shadow(0 10px 18px rgba(0,0,0,0.5)); }
+#detailGameTitle { font-weight: 850; color: #fff; margin-bottom: 8px; line-height: 1.25; letter-spacing: -0.3px; word-break: break-word; transition: font-size 0.2s ease; }
 .detail-stats-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(139, 163, 255, 0.12);
-    margin: 16px 0;
-    font-size: 13px;
-    color: #929bb8;
-    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center; gap: 15px; padding: 10px 14px;
+    border-radius: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(139, 163, 255, 0.12);
+    margin: 16px 0; font-size: 13px; color: #929bb8; white-space: nowrap;
 }
-
 .detail-desc-box {
-    padding: 16px;
-    border-radius: 12px;
-    background: rgba(10, 16, 38, 0.6);
-    border: 1px solid rgba(139, 163, 255, 0.1);
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.8;
-    margin-bottom: 20px;
+    padding: 16px; border-radius: 12px; background: rgba(10, 16, 38, 0.6); border: 1px solid rgba(139, 163, 255, 0.1);
+    color: var(--muted); font-size: 13px; line-height: 1.8; margin-bottom: 20px;
 }
+.detail-action-bar { display: flex; gap: 12px; }
 
-.detail-action-bar {
-    display: flex;
-    gap: 12px;
-}
-
-/* ================= 大厅主视觉与游戏网格 ================= */
-.breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    margin-bottom: 22px;
-    color: #687493;
-    font-size: 12px;
-    white-space: nowrap;
-}
-
-.breadcrumb-link {
-    cursor: pointer;
-    color: #8da5ff;
-    transition: color .2s;
-}
-
-.breadcrumb-link:hover {
-    color: #ffffff;
-    text-decoration: underline;
-}
+/* 页面主视觉卡片 */
+.breadcrumb { display: flex; align-items: center; gap: 9px; margin-bottom: 22px; color: #687493; font-size: 12px; white-space: nowrap; }
+.breadcrumb-link { cursor: pointer; color: #8da5ff; transition: color .2s; }
+.breadcrumb-link:hover { color: #ffffff; text-decoration: underline; }
 
 .hero {
-    position: relative;
-    min-height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 30px;
-    padding: 30px clamp(20px, 5vw, 55px);
-    margin-bottom: 35px;
-    border: 1px solid rgba(141, 150, 255, .25);
-    border-radius: 24px;
-    overflow: hidden;
-    isolation: isolate;
+    position: relative; min-height: 220px; display: flex; align-items: center; justify-content: space-between;
+    gap: 25px; padding: 30px clamp(20px, 4vw, 45px); margin-bottom: 35px; border: 1px solid rgba(141, 150, 255, .25);
+    border-radius: 24px; overflow: hidden; isolation: isolate;
     background: linear-gradient(105deg, rgba(43, 37, 105, .97), rgba(20, 40, 91, .9) 60%, rgba(15, 31, 65, .94));
 }
-
-.hero-glow {
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    right: 9%;
-    top: -80px;
-    border-radius: 50%;
-    background: #6a42ff;
-    filter: blur(100px);
-    opacity: .25;
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 2;
-    max-width: 580px;
-    min-width: 0;
-}
-
+.hero-glow { position: absolute; width: 300px; height: 300px; right: 9%; top: -80px; border-radius: 50%; background: #6a42ff; filter: blur(100px); opacity: .25; pointer-events: none; }
+.hero-content { position: relative; z-index: 2; max-width: 580px; }
 .hero-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 10px;
-    margin-bottom: 12px;
-    border: 1px solid rgba(164, 157, 255, .3);
-    border-radius: 8px;
-    background: rgba(119, 95, 255, .13);
-    color: #c4bcff;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px; margin-bottom: 12px;
+    border: 1px solid rgba(164, 157, 255, .3); border-radius: 8px; background: rgba(119, 95, 255, .13);
+    color: #c4bcff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; white-space: nowrap;
 }
-
-.hero-tag::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #a28cff;
-    box-shadow: 0 0 9px #a28cff;
-}
-
-.hero h1 {
-    margin-bottom: 10px;
-    font-size: clamp(20px, 4.2vw, 36px);
-    font-weight: 900;
-    letter-spacing: -.5px;
-    line-height: 1.25;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.hero h1 span {
-    background: linear-gradient(100deg, #b8c8ff, #b99cff, #80d8ff);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-}
-
-.hero p {
-    color: #aeb9dc;
-    font-size: clamp(12px, 2.5vw, 14px);
-    line-height: 1.6;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.hero-actions {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 12px;
-    margin-top: 18px;
-    overflow-x: auto;
-}
-
+.hero-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #a28cff; box-shadow: 0 0 9px #a28cff; }
+.hero h1 { margin-bottom: 10px; font-size: clamp(22px, 4.5vw, 36px); font-weight: 900; letter-spacing: -.5px; line-height: 1.3; }
+.hero h1 span { background: linear-gradient(100deg, #b8c8ff, #b99cff, #80d8ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p { color: #aeb9dc; font-size: 13px; line-height: 1.6; }
+.hero-actions { display: flex; align-items: center; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
 .primary-btn, .secondary-btn {
-    min-height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 16px;
-    border-radius: 11px;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 700;
-    transition: all .22s ease;
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
+    min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0 16px; border-radius: 11px; text-decoration: none; font-size: 13px; font-weight: 700;
+    transition: all .22s ease; cursor: pointer; white-space: nowrap; flex-shrink: 0;
 }
+.primary-btn { border: 1px solid transparent; background: linear-gradient(110deg, #8261ff, #387cff); color: white; box-shadow: 0 6px 20px rgba(74, 94, 255, .25); }
+.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(74, 94, 255, .4); }
+.secondary-btn { border: 1px solid rgba(174, 190, 255, .23); background: rgba(255,255,255,.045); color: #d7e0ff; }
+.secondary-btn:hover { background: rgba(255,255,255,.09); }
 
-.primary-btn {
-    border: 1px solid transparent;
-    background: linear-gradient(110deg, #8261ff, #387cff);
-    color: white;
-    box-shadow: 0 6px 20px rgba(74, 94, 255, .25);
-}
+.hero-art { position: relative; width: 220px; height: 190px; flex-shrink: 0; display: grid; place-items: center; }
+.art-ring { position: absolute; width: 170px; height: 170px; border: 1px solid rgba(164, 162, 255, .28); border-radius: 50%; box-shadow: 0 0 50px rgba(95, 88, 255, .12); }
+.art-controller { position: relative; width: 130px; height: 95px; color: #d9d4ff; filter: drop-shadow(0 0 24px rgba(136, 111, 255, .7)); animation: controllerFloat 4s ease-in-out infinite; }
+@keyframes controllerFloat { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-8px) rotate(3deg); } }
 
-.primary-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 26px rgba(74, 94, 255, .4);
-}
-
-.secondary-btn {
-    border: 1px solid rgba(174, 190, 255, .23);
-    background: rgba(255,255,255,.045);
-    color: #d7e0ff;
-}
-
-.secondary-btn:hover {
-    background: rgba(255,255,255,.09);
-}
-
-.hero-art {
-    position: relative;
-    width: 220px;
-    height: 190px;
-    flex-shrink: 0;
-    display: grid;
-    place-items: center;
-}
-
-.art-ring {
-    position: absolute;
-    width: 170px;
-    height: 170px;
-    border: 1px solid rgba(164, 162, 255, .28);
-    border-radius: 50%;
-    box-shadow: 0 0 50px rgba(95, 88, 255, .12), inset 0 0 35px rgba(95, 88, 255, .1);
-}
-
-.art-controller {
-    position: relative;
-    width: 130px;
-    height: 95px;
-    color: #d9d4ff;
-    filter: drop-shadow(0 0 24px rgba(136, 111, 255, .7));
-    animation: controllerFloat 4s ease-in-out infinite;
-}
-
-@keyframes controllerFloat {
-    0%, 100% { transform: translateY(0) rotate(-4deg); }
-    50% { transform: translateY(-8px) rotate(3deg); }
-}
-
-/* ================= 手机端标题、刷新、数量强制同行，绝不换行 ================= */
-.section-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 14px;
-    flex-wrap: nowrap !important;
-}
-
-.section-title-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    flex: 1;
-}
-
-.section-bar {
-    width: 4px;
-    height: 22px;
-    border-radius: 10px;
-    background: linear-gradient(to bottom, #a28aff, #3987ff);
-    box-shadow: 0 0 12px rgba(104, 119, 255, .55);
-    flex-shrink: 0;
-}
-
-.section-title-texts {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.section-heading h2 {
-    font-size: clamp(16px, 4vw, 20px);
-    font-weight: 850;
-    letter-spacing: -.4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.section-subtitle {
-    margin-top: 2px;
-    color: #7884a6;
-    font-size: 11px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.heading-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
+/* 手机端标题同行防掉落 */
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.section-title-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.section-bar { width: 4px; height: 22px; border-radius: 10px; background: linear-gradient(to bottom, #a28aff, #3987ff); flex-shrink: 0; }
+.section-title-texts { min-width: 0; display: flex; flex-direction: column; }
+.section-heading h2 { font-size: clamp(16px, 4vw, 20px); font-weight: 850; letter-spacing: -.4px; white-space: nowrap; }
+.section-subtitle { margin-top: 2px; color: #7884a6; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.heading-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .sync-btn {
-    padding: 5px 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(139, 163, 255, 0.32);
+    padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(139, 163, 255, 0.32);
     background: linear-gradient(135deg, rgba(104, 111, 255, 0.15), rgba(57, 135, 255, 0.12));
-    font-size: 11px;
-    font-weight: 600;
-    color: #d2deff;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    transition: all 0.25s ease;
-    white-space: nowrap;
-    flex-shrink: 0;
+    font-size: 11px; font-weight: 600; color: #d2deff; cursor: pointer; display: inline-flex; align-items: center;
+    gap: 4px; transition: all 0.25s ease; white-space: nowrap; flex-shrink: 0;
 }
-
-.sync-btn:hover {
-    background: linear-gradient(135deg, rgba(104, 111, 255, 0.3), rgba(57, 135, 255, 0.24));
-    color: #ffffff;
-    border-color: rgba(160, 190, 255, 0.65);
-    box-shadow: 0 0 14px rgba(104, 111, 255, 0.35);
-}
-
-.sync-btn svg {
-    width: 12px;
-    height: 12px;
-}
-
-.sync-btn.loading svg {
-    animation: syncRotate 0.8s linear infinite;
-}
-
+.sync-btn:hover { background: linear-gradient(135deg, rgba(104, 111, 255, 0.3), rgba(57, 135, 255, 0.24)); color: #ffffff; }
+.sync-btn svg { width: 12px; height: 12px; }
+.sync-btn.loading svg { animation: syncRotate 0.8s linear infinite; }
 @keyframes syncRotate { to { transform: rotate(360deg); } }
 
-.result-count {
-    color: #9ca8c9;
-    font-size: 11px;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
+.result-count { color: #9ca8c9; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+.result-count strong { color: #c4caff; font-size: 13px; }
 
-.result-count strong {
-    color: #c4caff;
-    font-size: 13px;
-}
-
-.game-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 22px;
-    flex-wrap: wrap;
-}
-
-.filter-tabs {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    flex-wrap: nowrap;
-    padding-bottom: 2px;
-}
-
+.game-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
+.filter-tabs { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; padding-bottom: 2px; }
 .filter-tabs::-webkit-scrollbar { display: none; }
-
 .tab-btn {
-    padding: 6px 12px;
-    border: 1px solid rgba(139, 163, 255, 0.18);
-    border-radius: 8px;
-    background: rgba(255,255,255,.03);
-    color: #9ca8c9;
-    font-size: 12px;
-    cursor: pointer;
-    transition: .2s;
-    white-space: nowrap;
-    flex-shrink: 0;
+    padding: 6px 12px; border: 1px solid rgba(139, 163, 255, 0.18); border-radius: 8px;
+    background: rgba(255,255,255,.03); color: #9ca8c9; font-size: 12px; cursor: pointer; transition: .2s; white-space: nowrap; flex-shrink: 0;
 }
+.tab-btn:hover { color: white; background: rgba(255,255,255,.08); }
+.tab-btn.active { color: white; border-color: rgba(137, 131, 255, .4); background: linear-gradient(120deg, rgba(119, 89, 255, .28), rgba(53, 121, 255, .2)); }
 
-.tab-btn:hover {
-    color: white;
-    background: rgba(255,255,255,.08);
-}
-
-.tab-btn.active {
-    color: white;
-    border-color: rgba(137, 131, 255, .4);
-    background: linear-gradient(120deg, rgba(119, 89, 255, .28), rgba(53, 121, 255, .2));
-}
-
-.search-filter-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.search-box {
-    position: relative;
-    width: 190px;
-    flex-shrink: 0;
-}
-
-.search-box svg {
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    left: 11px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #7d89ac;
-    pointer-events: none;
-}
-
+.search-filter-row { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.search-box { position: relative; width: 190px; flex-shrink: 0; }
+.search-box svg { position: absolute; width: 15px; height: 15px; left: 11px; top: 50%; transform: translateY(-50%); color: #7d89ac; pointer-events: none; }
 .search-box input {
-    width: 100%;
-    height: 34px;
-    padding: 0 10px 0 34px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: rgba(15, 21, 43, .76);
-    color: white;
-    font-size: 12px;
-    outline: none;
-    transition: .25s;
+    width: 100%; height: 34px; padding: 0 10px 0 34px; border: 1px solid var(--border); border-radius: 9px;
+    background: rgba(15, 21, 43, .76); color: white; font-size: 12px; outline: none; transition: .25s;
 }
-
-.search-box input:focus {
-    border-color: rgba(129, 152, 255, .6);
-    box-shadow: 0 0 0 3px rgba(103, 119, 255, .1);
-}
-
-.sort-select-wrap {
-    position: relative;
-}
-
+.search-box input:focus { border-color: rgba(129, 152, 255, .6); }
+.sort-select-wrap { position: relative; }
 .sort-select {
-    height: 34px;
-    padding: 0 26px 0 10px;
-    border-radius: 9px;
-    border: 1px solid var(--border);
-    background: rgba(15, 21, 43, .85);
-    color: #dbe4ff;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    outline: none;
-    appearance: none;
-    -webkit-appearance: none;
-    white-space: nowrap;
+    height: 34px; padding: 0 26px 0 10px; border-radius: 9px; border: 1px solid var(--border);
+    background: rgba(15, 21, 43, .85); color: #dbe4ff; font-size: 12px; font-weight: 600; cursor: pointer;
+    outline: none; appearance: none; -webkit-appearance: none; white-space: nowrap;
 }
+.sort-select-wrap::after { content: "▼"; position: absolute; right: 9px; top: 50%; transform: translateY(-50%); font-size: 8px; color: #8da5ff; pointer-events: none; }
 
-.sort-select:focus {
-    border-color: #8564ff;
-}
-
-.sort-select-wrap::after {
-    content: "▼";
-    position: absolute;
-    right: 9px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 8px;
-    color: #8da5ff;
-    pointer-events: none;
-}
-
-/* 游戏卡片网格系统 */
-.games-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
-    min-height: 220px;
-}
-
+/* 游戏网格 */
+.games-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; min-height: 220px; }
 .game-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--panel);
-    transition: all .28s ease;
-    animation: cardAppear .35s ease both;
-    cursor: pointer;
+    position: relative; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border);
+    border-radius: var(--radius); background: var(--panel); transition: all .28s ease; animation: cardAppear .35s ease both; cursor: pointer;
 }
-
-@keyframes cardAppear {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.game-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(132, 158, 255, .48);
-    background: var(--panel-hover);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, .25), 0 0 20px rgba(91, 101, 255, .1);
-}
-
+@keyframes cardAppear { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.game-card:hover { transform: translateY(-5px); border-color: rgba(132, 158, 255, .48); background: var(--panel-hover); box-shadow: 0 15px 35px rgba(0, 0, 0, .25); }
 .fav-heart-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 10;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: rgba(7, 10, 25, 0.75);
-    border: 1px solid rgba(255, 95, 120, 0.4);
-    box-shadow: 0 0 10px rgba(255, 75, 100, 0.4);
-    font-size: 14px;
-    opacity: 0;
-    transform: scale(0.6);
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    pointer-events: none;
+    position: absolute; top: 10px; left: 10px; z-index: 10; width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center; background: rgba(7, 10, 25, 0.75); border: 1px solid rgba(255, 95, 120, 0.4);
+    font-size: 14px; opacity: 0; transform: scale(0.6); transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none;
 }
-
-.game-card.favorited .fav-heart-badge {
-    opacity: 1;
-    transform: scale(1);
-    animation: heartPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes heartPop {
-    0% { transform: scale(0.3); }
-    60% { transform: scale(1.3); }
-    100% { transform: scale(1); }
-}
+.game-card.favorited .fav-heart-badge { opacity: 1; transform: scale(1); }
 
 .card-banner {
-    position: relative;
-    height: 140px;
-    display: grid;
-    place-items: center;
-    border-bottom: 1px solid rgba(255,255,255,.06);
-    background: radial-gradient(ellipse at 50% 100%, rgba(103, 82, 219, .3), transparent 65%),
-                linear-gradient(135deg, #182247, #0e1733);
+    position: relative; height: 140px; display: grid; place-items: center; border-bottom: 1px solid rgba(255,255,255,.06);
+    background: radial-gradient(ellipse at 50% 100%, rgba(103, 82, 219, .3), transparent 65%), linear-gradient(135deg, #182247, #0e1733);
 }
-
-.game-symbol {
-    font-size: 54px;
-    line-height: 1;
-    filter: drop-shadow(0 8px 14px rgba(0,0,0,.32));
-    transition: transform .35s ease;
-}
-
-.game-symbol-img {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
-    filter: drop-shadow(0 8px 14px rgba(0,0,0,.4));
-}
-
-.game-card:hover .game-symbol {
-    transform: scale(1.12) translateY(-3px);
-}
-
+.game-symbol { font-size: 54px; line-height: 1; filter: drop-shadow(0 8px 14px rgba(0,0,0,.32)); transition: transform .35s ease; }
+.game-symbol-img { width: 64px; height: 64px; object-fit: contain; }
+.game-card:hover .game-symbol { transform: scale(1.12) translateY(-3px); }
 .category-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    padding: 3px 7px;
-    border: 1px solid rgba(190, 202, 255, .17);
-    border-radius: 6px;
-    background: rgba(7, 10, 25, .72);
-    color: #c0cbff;
-    font-size: 10px;
-    backdrop-filter: blur(8px);
-    white-space: nowrap;
+    position: absolute; top: 8px; right: 8px; padding: 3px 7px; border: 1px solid rgba(190, 202, 255, .17);
+    border-radius: 6px; background: rgba(7, 10, 25, .72); color: #c0cbff; font-size: 10px; backdrop-filter: blur(8px); white-space: nowrap;
 }
-
-.card-body {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    padding: 15px;
-}
-
-.game-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 8px;
-    color: #8491b6;
-    font-size: 11px;
-    white-space: nowrap;
-}
-
-.game-type {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.game-type::before {
-    content: "";
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #8e8bff;
-}
-
-.play-count-badge {
-    color: #73d7ff;
-    font-weight: 600;
-}
-
-.game-title {
-    margin-bottom: 6px;
-    color: #f2f4ff;
-    font-size: 16px;
-    font-weight: 800;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.game-desc {
-    min-height: 44px;
-    margin-bottom: 14px;
-    color: #929dbb;
-    font-size: 12px;
-    line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
+.card-body { display: flex; flex-direction: column; flex: 1; padding: 15px; }
+.game-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: #8491b6; font-size: 11px; white-space: nowrap; }
+.game-type { display: inline-flex; align-items: center; gap: 5px; }
+.game-type::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: #8e8bff; }
+.play-count-badge { color: #73d7ff; font-weight: 600; }
+.game-title { margin-bottom: 6px; color: #f2f4ff; font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.game-desc { min-height: 44px; margin-bottom: 14px; color: #929dbb; font-size: 12px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .play-btn {
-    width: 100%;
-    min-height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: auto;
-    border: 1px solid rgba(130, 151, 255, .21);
-    border-radius: 9px;
-    background: rgba(102, 104, 255, .11);
-    color: #cbd6ff;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: .22s;
-    white-space: nowrap;
+    width: 100%; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: auto;
+    border: 1px solid rgba(130, 151, 255, .21); border-radius: 9px; background: rgba(102, 104, 255, .11); color: #cbd6ff;
+    font-size: 12px; font-weight: 700; cursor: pointer; transition: .22s; white-space: nowrap;
 }
+.play-btn:hover { background: linear-gradient(110deg, #7958ee, #367dff); color: white; }
 
-.play-btn:hover {
-    border-color: transparent;
-    background: linear-gradient(110deg, #7958ee, #367dff);
-    color: white;
-    box-shadow: 0 5px 18px rgba(69, 91, 255, .25);
-}
-
-.status-state {
-    grid-column: 1 / -1;
-    display: none;
-    padding: 65px 20px;
-    border: 1px dashed rgba(139, 163, 255, .2);
-    border-radius: 20px;
-    text-align: center;
-    background: rgba(15, 21, 43, .35);
-}
-
-.status-state.show {
-    display: block;
-}
-
-.radar-scan-box {
-    position: relative;
-    width: 68px;
-    height: 68px;
-    margin: 0 auto 16px;
-}
-
-.radar-ring {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    border-top-color: #8564ff;
-    border-bottom-color: #3987ff;
-    animation: radarSpin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-}
-
-.radar-ring.inner {
-    inset: 10px;
-    border-top-color: #73d7ff;
-    border-bottom-color: transparent;
-    animation: radarSpinRev 0.8s linear infinite;
-}
-
-.radar-dot {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    left: calc(50% - 4px);
-    top: calc(50% - 4px);
-    background: #ffffff;
-    border-radius: 50%;
-    box-shadow: 0 0 12px #73d7ff, 0 0 24px #3987ff;
-}
-
+.status-state { grid-column: 1 / -1; display: none; padding: 65px 20px; border: 1px dashed rgba(139, 163, 255, .2); border-radius: 20px; text-align: center; background: rgba(15, 21, 43, .35); }
+.status-state.show { display: block; }
+.radar-scan-box { position: relative; width: 68px; height: 68px; margin: 0 auto 16px; }
+.radar-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; border-top-color: #8564ff; border-bottom-color: #3987ff; animation: radarSpin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+.radar-ring.inner { inset: 10px; border-top-color: #73d7ff; border-bottom-color: transparent; animation: radarSpinRev 0.8s linear infinite; }
+.radar-dot { position: absolute; width: 8px; height: 8px; left: calc(50% - 4px); top: calc(50% - 4px); background: #ffffff; border-radius: 50%; box-shadow: 0 0 12px #73d7ff; }
 @keyframes radarSpin { to { transform: rotate(360deg); } }
 @keyframes radarSpinRev { to { transform: rotate(-360deg); } }
-
-.empty-vector-wrap {
-    width: 68px;
-    height: 68px;
-    margin: 0 auto 16px;
-    border-radius: 20px;
-    display: grid;
-    place-items: center;
-    background: rgba(133, 100, 255, 0.08);
-    border: 1px solid rgba(139, 163, 255, 0.22);
-    color: #8da5ff;
-}
-
-.empty-vector-wrap svg {
-    width: 34px;
-    height: 34px;
-}
+.empty-vector-wrap { width: 68px; height: 68px; margin: 0 auto 16px; border-radius: 20px; display: grid; place-items: center; background: rgba(133, 100, 255, 0.08); border: 1px solid rgba(139, 163, 255, 0.22); color: #8da5ff; }
+.empty-vector-wrap svg { width: 34px; height: 34px; }
 
 .footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    padding: 24px 0 0;
-    margin-top: 45px;
-    border-top: 1px solid rgba(139, 163, 255, .11);
-    color: #66718f;
-    font-size: 11px;
-    white-space: nowrap;
+    display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 24px 0 0;
+    margin-top: 45px; border-top: 1px solid rgba(139, 163, 255, .11); color: #66718f; font-size: 11px; white-space: nowrap;
 }
 
 @media (max-width: 1050px) {
     .games-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .hero-art { width: 170px; }
 }
-
 @media (max-width: 650px) {
     .header { height: 62px; padding: 0 14px; }
     .container { padding: 18px 14px 45px; }
@@ -1669,7 +504,6 @@ body.leaving-to-home .app-wrapper {
 <div id="fpsMeter">60 FPS</div>
 
 <div class="app-wrapper">
-
     <!-- 顶部导航 -->
     <header class="header">
         <div class="header-left">
@@ -1679,7 +513,7 @@ body.leaving-to-home .app-wrapper {
                 <span class="menu-line"></span>
             </button>
 
-            <a href="index.html" class="brand to-home-trigger" aria-label="返回 GAME HUB 主页" title="点击返回 GAME HUB 主页">
+            <a href="index.html" class="brand to-home-trigger" aria-label="返回 GAME HUB 主页">
                 <span class="brand-mark">
                     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 8h12a4 4 0 0 1 3.8 5l-1.1 3.5a2 2 0 0 1-3.2 1l-2.2-1.8h-4.6l-2.2 1.8a2 2 0 0 1-3.2-1L4.2 13A4 4 0 0 1 8 8z"/>
@@ -1693,7 +527,7 @@ body.leaving-to-home .app-wrapper {
         </div>
     </header>
 
-    <!-- 侧边栏抽屉（独立滚动隔离） -->
+    <!-- 侧边栏抽屉 -->
     <div class="drawer-mask" id="drawerMask" aria-hidden="true"></div>
 
     <aside class="drawer-card" id="drawerCard" aria-label="侧边控制栏">
@@ -1717,6 +551,7 @@ body.leaving-to-home .app-wrapper {
                     </svg>
                 </button>
 
+                <!-- 抽屉内的游戏：圆角长方形卡片容器 -->
                 <div class="subgames-panel" id="subgamesPanel">
                     <div style="padding: 10px; color: var(--muted); font-size: 12px;">正在连接 GitHub...</div>
                 </div>
@@ -1840,7 +675,7 @@ body.leaving-to-home .app-wrapper {
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.19"/>
                                 </svg>
-                                <span data-i18n="refreshLibrary">刷新游戏库</span>
+                                <span data-i18n="refreshLibrary">刷新</span>
                             </button>
                             <div class="result-count">
                                 <span data-i18n="showing">显示</span> <strong id="visibleCount">0</strong> <span data-i18n="gamesUnit">款</span>
@@ -1897,7 +732,7 @@ body.leaving-to-home .app-wrapper {
                                 </svg>
                             </div>
                             <h3 id="emptyTitle" data-i18n="emptyTitle">暂未发现游戏</h3>
-                            <p id="emptyDesc" style="margin-top:6px; color:var(--muted); font-size:13px;" data-i18n="emptyDesc">请上传游戏 HTML 文件，或点击上方“刷新游戏库”重试。</p>
+                            <p id="emptyDesc" style="margin-top:6px; color:var(--muted); font-size:13px;" data-i18n="emptyDesc">请上传游戏 HTML 文件，或点击上方“刷新”重试。</p>
                         </div>
                     </div>
                 </section>
@@ -1912,7 +747,7 @@ body.leaving-to-home .app-wrapper {
             </main>
         </div>
 
-        <!-- ================= 视图 2：玩家账号页面（锁定异常上滑） ================= -->
+        <!-- ================= 视图 2：玩家账号页面 ================= -->
         <div class="page-view subview-locked" id="viewAccount">
             <main class="container">
                 <div class="subview-header">
@@ -1968,7 +803,6 @@ body.leaving-to-home .app-wrapper {
                 </div>
 
                 <div class="subview-card">
-                    <!-- 分类一：手绘矢量显示器图标 -->
                     <div class="settings-section-title">
                         <svg class="section-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="3" width="20" height="14" rx="2"></rect>
@@ -1979,7 +813,6 @@ body.leaving-to-home .app-wrapper {
                         <span>界面语言与视觉</span>
                     </div>
 
-                    <!-- 纯 CSS 下滑展开卡片式语言选择器 -->
                     <div class="lang-card-wrap" id="langCardAccordion">
                         <button class="lang-card-header" type="button" id="toggleLangCard">
                             <div class="setting-text-wrap">
@@ -2022,7 +855,6 @@ body.leaving-to-home .app-wrapper {
                         <input type="checkbox" class="cyber-switch" id="fpsSwitch">
                     </div>
 
-                    <!-- 分类二：手绘矢量游戏手柄图标 -->
                     <div class="settings-section-title">
                         <svg class="section-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="6" width="20" height="12" rx="4"></rect>
@@ -2050,7 +882,6 @@ body.leaving-to-home .app-wrapper {
                         <input type="checkbox" class="cyber-checkbox" id="newTabSwitch">
                     </div>
 
-                    <!-- 分类三：手绘矢量音波音效图标 -->
                     <div class="settings-section-title">
                         <svg class="section-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
@@ -2068,7 +899,6 @@ body.leaving-to-home .app-wrapper {
                         <input type="checkbox" class="cyber-switch" id="vibrateSwitch" checked>
                     </div>
 
-                    <!-- 分类四：手绘矢量数据库图标 -->
                     <div class="settings-section-title">
                         <svg class="section-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
@@ -2089,18 +919,17 @@ body.leaving-to-home .app-wrapper {
             </main>
         </div>
 
-        <!-- ================= 视图 4：全屏游戏专属详情页（锁定异常上滑） ================= -->
+        <!-- ================= 视图 4：全屏游戏专属详情页 ================= -->
         <div class="page-view subview-locked" id="viewGameDetail">
             <main class="container">
                 <div class="subview-header">
-                    <button class="subview-back-btn" id="gameDetailBackBtn">
+                    <h2 class="subview-title" id="detailHeaderTitle" style="max-width:calc(100% - 50px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:clamp(16px, 4.5vw, 20px);">游戏详情</h2>
+                    <button class="subview-close-btn" id="gameDetailBackBtn" aria-label="关闭详情" title="返回大厅">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
-                        <span data-i18n="backToLobby">返回大厅</span>
                     </button>
-                    <h2 class="subview-title" id="detailHeaderTitle">游戏详情</h2>
-                    <div style="width: 80px;"></div>
                 </div>
 
                 <div class="game-detail-card">
@@ -2108,12 +937,11 @@ body.leaving-to-home .app-wrapper {
                         <span class="detail-view-symbol" id="detailGameIcon">🎮</span>
                     </div>
 
-                    <h2 id="detailGameTitle" style="font-size:24px; font-weight:800; color:#fff; margin-bottom:8px;">游戏标题</h2>
+                    <h2 id="detailGameTitle">游戏标题</h2>
 
                     <div class="detail-stats-bar">
                         <span id="detailGameCat">休闲街机</span>
                         <span>•</span>
-                        <!-- 真实游玩人次 -->
                         <span id="detailGamePlays" style="color:#73d7ff; font-weight:700;">👥 0人游玩</span>
                         <span>•</span>
                         <span id="detailGameFavStatus">未收藏</span>
@@ -2140,7 +968,6 @@ body.leaving-to-home .app-wrapper {
         </div>
 
     </div>
-
 </div>
 
 <!-- ================= 关于平台弹窗 ================= -->
@@ -2174,7 +1001,7 @@ body.leaving-to-home .app-wrapper {
 </div>
 
 <script>
-/* ================= 多语言词典 (i18n) ================= */
+/* 多语言词典 (i18n) */
 const I18N = {
     "zh-CN": {
         gameList: "游戏列表", edit: "编辑 ›", settings: "偏好设置", about: "关于平台",
@@ -2182,12 +1009,12 @@ const I18N = {
         heroDesc: "探索精选小游戏，挑战反应速度与策略思维，随时打开即玩。",
         exploreAll: "探索全部游戏", randomPlay: "随机畅玩",
         exploreHeading: "探索游戏", exploreSub: "双击卡片快速收藏 ❤️ · 单击查看详情",
-        refreshLibrary: "刷新游戏库", showing: "显示", gamesUnit: "款",
+        refreshLibrary: "刷新", showing: "显示", gamesUnit: "款",
         catAll: "全部", catPuzzle: "益智", catReflex: "反应", catArcade: "街机",
         sortDefault: "默认推荐", sortFav: "❤️ 仅看我的收藏", sortPopDesc: "🔥 最多人玩 → 少人玩",
         sortPopAsc: "❄️ 少人玩 → 多人玩", sortAZ: "名称 A → Z", sortZA: "名称 Z → A",
         syncingTitle: "正在同步游戏库...", syncingSub: "正在连接云端扫描最新游戏文件",
-        emptyTitle: "暂未发现游戏", emptyDesc: "请上传游戏 HTML 文件，或点击上方“刷新游戏库”重试。",
+        emptyTitle: "暂未发现游戏", emptyDesc: "请上传游戏 HTML 文件，或点击上方“刷新”重试。",
         emptyFavTitle: "暂无收藏游戏", emptyFavDesc: "你还没有收藏任何游戏，在列表中双击任意卡片即可快速收藏 ❤️",
         footerTag: "纯粹小游戏 · 即开即玩", backToLobby: "返回大厅",
         playerProfile: "玩家档案", playerStatus: "GAME HUB 正式认证玩家",
@@ -2203,12 +1030,12 @@ const I18N = {
         heroDesc: "Discover handpicked games, test your reflex and strategy, play instantly.",
         exploreAll: "Explore Games", randomPlay: "Random Game",
         exploreHeading: "Explore Library", exploreSub: "Double-click to toggle favorite ❤️ · Click for details",
-        refreshLibrary: "Sync Library", showing: "Showing", gamesUnit: "games",
+        refreshLibrary: "Sync", showing: "Showing", gamesUnit: "games",
         catAll: "All", catPuzzle: "Puzzle", catReflex: "Reflex", catArcade: "Arcade",
         sortDefault: "Featured", sortFav: "❤️ Favorites Only", sortPopDesc: "🔥 Most Played",
         sortPopAsc: "❄️ Least Played", sortAZ: "Name A → Z", sortZA: "Name Z → A",
         syncingTitle: "Syncing Games...", syncingSub: "Scanning cloud repository for updates",
-        emptyTitle: "No Games Found", emptyDesc: "Upload game HTML files or click Sync Library to reload.",
+        emptyTitle: "No Games Found", emptyDesc: "Upload game HTML files or click Sync to reload.",
         emptyFavTitle: "No Favorites Yet", emptyFavDesc: "Double-click any game card to add it to your favorites ❤️",
         footerTag: "Instant Play · Pure Gaming", backToLobby: "Back",
         playerProfile: "Player Profile", playerStatus: "GAME HUB Certified Player",
@@ -2224,7 +1051,7 @@ const I18N = {
         heroDesc: "探索精選小遊戲，挑戰反應速度與策略思維，隨時打開即玩。",
         exploreAll: "探索全部遊戲", randomPlay: "隨機暢玩",
         exploreHeading: "探索遊戲", exploreSub: "雙擊卡片快速收藏 ❤️ · 單擊查看詳情",
-        refreshLibrary: "重新整理遊戲庫", showing: "顯示", gamesUnit: "款",
+        refreshLibrary: "重新整理", showing: "顯示", gamesUnit: "款",
         catAll: "全部", catPuzzle: "益智", catReflex: "反應", catArcade: "街機",
         sortDefault: "預設推薦", sortFav: "❤️ 僅看我的收藏", sortPopDesc: "🔥 最多人玩 → 少人玩",
         sortPopAsc: "❄️ 少人玩 → 多人玩", sortAZ: "名稱 A → Z", sortZA: "名稱 Z → A",
@@ -2262,7 +1089,7 @@ function applyLanguage(lang) {
     });
 }
 
-/* ================= 1. 动态背景与实时 FPS ================= */
+/* 1. 动态背景与实时 FPS */
 const BG_STORAGE_KEY = "gamehub_bg_anim";
 let isBgAnim = localStorage.getItem(BG_STORAGE_KEY) !== "false";
 
@@ -2278,7 +1105,6 @@ document.getElementById("bgAnimSwitch").addEventListener("change", (e) => {
     syncBgState(isBgAnim);
 });
 
-// FPS 监控
 const FPS_STORAGE_KEY = "gamehub_show_fps";
 let isFpsEnabled = localStorage.getItem(FPS_STORAGE_KEY) === "true";
 const fpsMeter = document.getElementById("fpsMeter");
@@ -2314,34 +1140,26 @@ function syncFpsState(enabled) {
 syncFpsState(isFpsEnabled);
 fpsSwitch.addEventListener("change", () => syncFpsState(fpsSwitch.checked));
 
-/* ================= 2. ✨ 核心改进：工业级滚动像素锁定与完全隔离 ================= */
+/* 2. 抽屉菜单与大厅滚动完全隔离 */
 const openDrawerBtn = document.getElementById("openDrawerBtn");
 const closeDrawerBtn = document.getElementById("closeDrawerBtn");
 const drawerCard = document.getElementById("drawerCard");
 const drawerMask = document.getElementById("drawerMask");
 
-let lockedScrollPosition = 0;
-
 function lockPageScroll() {
-    lockedScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${lockedScrollPosition}px`;
-    document.body.style.width = '100%';
-    document.body.style.overflow = 'hidden';
+    document.documentElement.classList.add("scroll-locked");
+    document.body.classList.add("scroll-locked");
 }
 
 function unlockPageScroll() {
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    document.body.style.overflow = '';
-    window.scrollTo(0, lockedScrollPosition);
+    document.documentElement.classList.remove("scroll-locked");
+    document.body.classList.remove("scroll-locked");
 }
 
 function openDrawer() {
     drawerMask.classList.add("active");
     drawerCard.classList.add("open");
-    lockPageScroll(); // 锁死大厅当前像素位置，抽屉内滚动不影响大厅
+    lockPageScroll();
     history.pushState({ uiOpen: "drawer" }, "");
 }
 
@@ -2349,7 +1167,7 @@ function closeDrawer(needHistoryBack = true) {
     if (drawerCard.classList.contains("open")) {
         drawerMask.classList.remove("active");
         drawerCard.classList.remove("open");
-        unlockPageScroll(); // 恢复大厅原位
+        unlockPageScroll();
         if (needHistoryBack && history.state && history.state.uiOpen === "drawer") {
             history.back();
         }
@@ -2360,7 +1178,6 @@ openDrawerBtn.addEventListener("click", openDrawer);
 closeDrawerBtn.addEventListener("click", () => closeDrawer(true));
 drawerMask.addEventListener("click", () => closeDrawer(true));
 
-// 拦截遮罩、抽屉头尾的触控移动，杜绝任何穿透现象
 drawerMask.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 document.querySelector('.drawer-header').addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 document.querySelector('.drawer-footer').addEventListener('touchmove', e => e.preventDefault(), { passive: false });
@@ -2374,13 +1191,13 @@ accordionToggle.addEventListener("click", () => {
     subgamesPanel.style.maxHeight = isExpanded ? subgamesPanel.scrollHeight + "px" : "0";
 });
 
-/* ================= 3. 页面全屏滑动切换 (大厅 / 账号 / 设置 / 详情) ================= */
+/* 3. 页面全屏滑动切换 */
 function switchView(targetViewId, pushHistory = true) {
     closeDrawer(false);
     document.querySelectorAll(".page-view").forEach(view => {
         view.classList.toggle("active", view.id === targetViewId);
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo(0, 0);
     if (pushHistory) {
         history.pushState({ pageView: targetViewId }, "");
     }
@@ -2392,7 +1209,7 @@ document.getElementById("accountBackBtn").addEventListener("click", () => switch
 document.getElementById("settingsBackBtn").addEventListener("click", () => switchView("viewLobby"));
 document.getElementById("gameDetailBackBtn").addEventListener("click", () => switchView("viewLobby"));
 
-/* ================= 4. 纯 CSS 语言切换卡片下滑展开 ================= */
+/* 4. 纯 CSS 语言切换卡片下滑展开 */
 const langCardAccordion = document.getElementById("langCardAccordion");
 document.getElementById("toggleLangCard").addEventListener("click", () => {
     langCardAccordion.classList.toggle("open");
@@ -2406,7 +1223,7 @@ document.querySelectorAll(".lang-option-btn").forEach(btn => {
     });
 });
 
-/* ================= 5. 玩家账号自动记忆 (默认 Player) ================= */
+/* 5. 玩家账号自动记忆 */
 const PLAYER_NAME_KEY = "gamehub_player_name";
 const PLAYER_TITLE_KEY = "gamehub_player_title";
 const PLAYER_BIO_KEY = "gamehub_player_bio";
@@ -2447,7 +1264,6 @@ playerBioInput.addEventListener("input", (e) => {
     localStorage.setItem(PLAYER_BIO_KEY, savedPlayerBio);
 });
 
-// 重置数据
 document.getElementById("resetDataBtn").addEventListener("click", () => {
     if (confirm("确定要重置所有本地设置与游戏缓存吗？")) {
         localStorage.clear();
@@ -2455,7 +1271,7 @@ document.getElementById("resetDataBtn").addEventListener("click", () => {
     }
 });
 
-/* ================= 6. 模态弹窗（点击空白不关闭） ================= */
+/* 6. 模态弹窗 */
 const aboutModal = document.getElementById("aboutModal");
 const exitModal = document.getElementById("exitModal");
 
@@ -2481,7 +1297,6 @@ document.querySelectorAll(".close-modal-btn").forEach(btn => {
     btn.addEventListener("click", () => closeModal(btn.closest(".modal-mask"), true));
 });
 
-// 手机原生手势返回监听
 window.addEventListener("popstate", () => {
     const activeModal = document.querySelector(".modal-mask.show");
     if (activeModal) {
@@ -2513,9 +1328,7 @@ document.querySelectorAll(".to-home-trigger").forEach(el => {
 
 document.getElementById("confirmExitBtn").addEventListener("click", returnToHome);
 
-/* ========================================================
-   7. 自动同步 + 1分钟真实游玩人数 + 双击收藏 + 全屏详情页
-   ======================================================== */
+/* 7. 自动同步 + 1分钟真实游玩人数 + 双击收藏 + 全屏详情页 */
 const GITHUB_OWNER = "mlone-coder";
 const GITHUB_REPO = "GAMEHUB";
 
@@ -2536,11 +1349,9 @@ let currentKeyword = "";
 let currentSort = "default";
 let selectedGameForDetail = null;
 
-// 收藏夹系统
 const FAV_STORAGE_KEY = "gamehub_favorites";
 let favorites = JSON.parse(localStorage.getItem(FAV_STORAGE_KEY) || "[]");
 
-// ✨ 真实游玩人数系统（彻底删除虚假随机数，初始严格归0）
 const PLAY_COUNTS_KEY = "gamehub_play_counts";
 let playCounts = JSON.parse(localStorage.getItem(PLAY_COUNTS_KEY) || "{}");
 
@@ -2551,7 +1362,6 @@ function getGamePlayCount(url) {
     return 0;
 }
 
-// 启动游戏计时器：玩满 1 分钟后，人数实打实 +1
 function launchGameWithTimer(gameUrl) {
     const sessionKey = "gamehub_play_session";
     const session = { url: gameUrl, startTime: Date.now(), counted: false };
@@ -2627,7 +1437,6 @@ function toggleFavorite(gameUrl) {
     }
 }
 
-// 核心同步逻辑 (SWR 策略)
 async function autoSyncGamesFromGitHub(forceRefresh = false) {
     const CACHE_KEY = "gamehub_cached_games";
     const cachedData = localStorage.getItem(CACHE_KEY);
@@ -2656,7 +1465,6 @@ async function autoSyncGamesFromGitHub(forceRefresh = false) {
 
         const files = await res.json();
 
-        // 匹配任意非核心的 HTML 游戏文件
         const gameFiles = Array.isArray(files) 
             ? files.filter(f => {
                 if (f.type !== "file") return false;
@@ -2822,19 +1630,16 @@ function renderGames() {
             </div>
         `;
 
-        // 双击卡片快速收藏/取消收藏
         card.addEventListener("dblclick", (e) => {
             e.stopPropagation();
             toggleFavorite(game.url);
         });
 
-        // 单击卡片切换至全屏详情页
         card.addEventListener("click", (e) => {
             if (e.target.closest(".play-btn")) return;
             openGameDetailView(game);
         });
 
-        // 立即畅玩按钮
         card.querySelector(".play-btn").addEventListener("click", (e) => {
             e.stopPropagation();
             launchGameWithTimer(game.url);
@@ -2844,7 +1649,6 @@ function renderGames() {
     });
 }
 
-// 打开全屏游戏专属详情页
 function openGameDetailView(game) {
     selectedGameForDetail = game;
     const isImgIcon = game.icon.includes(".") || game.icon.includes("/");
@@ -2856,7 +1660,20 @@ function openGameDetailView(game) {
     }
 
     document.getElementById("detailHeaderTitle").textContent = game.title;
-    document.getElementById("detailGameTitle").textContent = game.title;
+    
+    const titleEl = document.getElementById("detailGameTitle");
+    titleEl.textContent = game.title;
+    const len = game.title.length;
+    if (len <= 5) {
+        titleEl.style.fontSize = "clamp(24px, 6.5vw, 32px)";
+    } else if (len <= 10) {
+        titleEl.style.fontSize = "clamp(20px, 5.2vw, 26px)";
+    } else if (len <= 16) {
+        titleEl.style.fontSize = "clamp(17px, 4.2vw, 22px)";
+    } else {
+        titleEl.style.fontSize = "clamp(15px, 3.6vw, 18px)";
+    }
+
     document.getElementById("detailGameDesc").textContent = game.desc;
 
     const dict = I18N[currentLang] || I18N["zh-CN"];
@@ -2887,6 +1704,7 @@ document.getElementById("detailPlayNowBtn").addEventListener("click", () => {
     }
 });
 
+/* 抽屉内的游戏列表卡片生成 */
 function renderDrawerSubgames() {
     subgamesPanel.innerHTML = "";
     if (!loadedGames.length) {
@@ -2895,12 +1713,24 @@ function renderDrawerSubgames() {
     }
 
     loadedGames.forEach(g => {
-        const link = document.createElement("a");
-        link.className = "subgame-link";
-        link.href = g.url;
-        const iconPrefix = (g.icon.includes(".") || g.icon.includes("/")) ? "🎮" : g.icon;
-        link.textContent = `${iconPrefix} ${g.title}`;
-        subgamesPanel.appendChild(link);
+        const card = document.createElement("a");
+        card.className = "subgame-card";
+        card.href = g.url;
+        const isImgIcon = g.icon.includes(".") || g.icon.includes("/");
+        const iconHtml = isImgIcon 
+            ? `<img src="${g.icon}" alt="${g.title}">` 
+            : g.icon;
+
+        card.innerHTML = `
+            <div class="subgame-card-left">
+                <span class="subgame-card-icon">${iconHtml}</span>
+                <span class="subgame-card-title">${g.title}</span>
+            </div>
+            <svg class="subgame-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        `;
+        subgamesPanel.appendChild(card);
     });
 }
 
@@ -2963,4 +1793,4 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 </body>
-</html>
+                            </html>
