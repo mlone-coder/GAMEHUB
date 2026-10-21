@@ -52,12 +52,6 @@ body {
     position: relative;
 }
 
-html.scroll-locked,
-body.scroll-locked {
-    overflow: hidden !important;
-    height: 100% !important;
-}
-
 input, textarea {
     -webkit-user-select: text;
     user-select: text;
@@ -335,6 +329,7 @@ body.leaving-to-home .app-wrapper {
     cursor: pointer;
 }
 
+/* ✨ 打叉按钮：只保留外发光边框，彻底取消旋转动画 */
 .drawer-close {
     width: 32px;
     height: 32px;
@@ -345,14 +340,16 @@ body.leaving-to-home .app-wrapper {
     display: grid;
     place-items: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, color 0.25s ease;
 }
 
-.drawer-close:hover {
+.drawer-close:hover,
+.drawer-close:active {
     color: #fff;
     border-color: #ff6b81;
-    background: rgba(255, 75, 100, 0.15);
-    transform: rotate(90deg);
+    background: rgba(255, 75, 100, 0.18);
+    box-shadow: 0 0 14px rgba(255, 107, 129, 0.55), inset 0 0 6px rgba(255, 107, 129, 0.25);
+    transform: none !important;
 }
 
 .drawer-body {
@@ -865,7 +862,7 @@ body.leaving-to-home .app-wrapper {
     flex-shrink: 0;
 }
 
-/* ================= ✨ 模态弹窗系统（经典初始动画：平滑居中聚焦放大） ================= */
+/* ================= ✨ 模态弹窗系统（原生平滑浮动，大厅原位静止） ================= */
 .modal-mask {
     position: fixed;
     inset: 0;
@@ -888,7 +885,7 @@ body.leaving-to-home .app-wrapper {
     visibility: visible;
 }
 
-/* ✨ 经典初始弹窗动效：居中在正中央 + scale(0.88) translateY(25px) 向内放大聚焦 */
+/* 经典弹窗动效：居中在正中央 + scale(0.88) translateY(25px) 向内放大聚焦 */
 .modal-box {
     position: relative;
     width: min(440px, 100%);
@@ -910,7 +907,7 @@ body.leaving-to-home .app-wrapper {
     filter: blur(0);
 }
 
-/* ✨ 弹窗右上角专属打叉按钮 */
+/* ✨ 修复打叉按钮：去掉了所有旋转，仅保留高质感霓虹光晕边框 */
 .modal-corner-close-btn {
     position: absolute;
     top: 14px;
@@ -924,16 +921,17 @@ body.leaving-to-home .app-wrapper {
     display: grid;
     place-items: center;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, color 0.25s ease;
     z-index: 10;
 }
 
-.modal-corner-close-btn:hover {
-    background: rgba(255, 75, 100, 0.22);
-    border-color: #ff6b81;
+.modal-corner-close-btn:hover,
+.modal-corner-close-btn:active {
     color: #fff;
-    transform: rotate(90deg);
-    box-shadow: 0 0 14px rgba(255, 75, 100, 0.35);
+    border-color: #ff6b81;
+    background: rgba(255, 75, 100, 0.18);
+    box-shadow: 0 0 14px rgba(255, 107, 129, 0.55), inset 0 0 6px rgba(255, 107, 129, 0.25);
+    transform: none !important;
 }
 
 .modal-corner-close-btn svg {
@@ -994,7 +992,7 @@ body.leaving-to-home .app-wrapper {
     color: white;
 }
 
-/* ================= ✨ 游戏专属居中详情弹窗内容 ================= */
+/* ================= 游戏专属居中详情弹窗内容 ================= */
 .game-detail-modal-box {
     text-align: left;
     padding: 26px 22px 22px;
@@ -1466,7 +1464,7 @@ body.leaving-to-home .app-wrapper {
     pointer-events: none;
 }
 
-/* 游戏卡片网格系统 */
+/* ================= 游戏卡片网格系统 ================= */
 .games-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1836,6 +1834,7 @@ body.leaving-to-home .app-wrapper {
                     </svg>
                 </button>
 
+                <!-- 抽屉内的游戏：圆角长方形卡片容器 -->
                 <div class="subgames-panel" id="subgamesPanel">
                     <div style="padding: 10px; color: var(--muted); font-size: 12px;">正在连接 GitHub...</div>
                 </div>
@@ -2203,10 +2202,10 @@ body.leaving-to-home .app-wrapper {
     </div>
 </div>
 
-<!-- ================= ✨ 游戏专属居中详情弹窗（右上角打叉 + 经典动画） ================= -->
+<!-- ================= 游戏专属居中详情弹窗（经典放大聚焦动效 + 右上角打叉） ================= -->
 <div class="modal-mask" id="gameDetailModal">
     <div class="modal-box game-detail-modal-box">
-        <!-- 右上角打叉关闭按钮 -->
+        <!-- ✨ 右上角常驻打叉按钮（无旋转，仅光晕边框） -->
         <button class="modal-corner-close-btn close-modal-btn" aria-label="关闭" title="关闭">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -2218,7 +2217,6 @@ body.leaving-to-home .app-wrapper {
             <span class="detail-modal-symbol" id="modalGameIcon">🎮</span>
         </div>
 
-        <!-- 动态自适应字号标题 -->
         <h2 id="modalGameTitle">游戏标题</h2>
 
         <div class="detail-stats-bar">
@@ -2392,6 +2390,18 @@ document.getElementById("bgAnimSwitch").addEventListener("change", (e) => {
     syncBgState(isBgAnim);
 });
 
+const GLOW_KEY = "gamehub_card_glow";
+const glowCardSwitch = document.getElementById("glowCardSwitch");
+let isGlowEnabled = localStorage.getItem(GLOW_KEY) !== "false";
+
+function syncGlowState(enabled) {
+    document.body.classList.toggle("no-card-glow", !enabled);
+    glowCardSwitch.checked = enabled;
+    localStorage.setItem(GLOW_KEY, String(enabled));
+}
+syncGlowState(isGlowEnabled);
+glowCardSwitch.addEventListener("change", (e) => syncGlowState(e.target.checked));
+
 const FPS_STORAGE_KEY = "gamehub_show_fps";
 let isFpsEnabled = localStorage.getItem(FPS_STORAGE_KEY) === "true";
 const fpsMeter = document.getElementById("fpsMeter");
@@ -2433,20 +2443,9 @@ const closeDrawerBtn = document.getElementById("closeDrawerBtn");
 const drawerCard = document.getElementById("drawerCard");
 const drawerMask = document.getElementById("drawerMask");
 
-function lockPageScroll() {
-    document.documentElement.classList.add("scroll-locked");
-    document.body.classList.add("scroll-locked");
-}
-
-function unlockPageScroll() {
-    document.documentElement.classList.remove("scroll-locked");
-    document.body.classList.remove("scroll-locked");
-}
-
 function openDrawer() {
     drawerMask.classList.add("active");
     drawerCard.classList.add("open");
-    lockPageScroll();
     history.pushState({ uiOpen: "drawer" }, "");
 }
 
@@ -2454,7 +2453,6 @@ function closeDrawer(needHistoryBack = true) {
     if (drawerCard.classList.contains("open")) {
         drawerMask.classList.remove("active");
         drawerCard.classList.remove("open");
-        unlockPageScroll();
         if (needHistoryBack && history.state && history.state.uiOpen === "drawer") {
             history.back();
         }
@@ -2481,9 +2479,16 @@ accordionToggle.addEventListener("click", () => {
 /* 3. 页面全屏滑动切换体系 (大厅 / 账号 / 设置) */
 function switchView(targetViewId, pushHistory = true) {
     closeDrawer(false);
-    document.querySelectorAll(".page-view").forEach(view => {
-        view.classList.toggle("active", view.id === targetViewId);
+    const views = document.querySelectorAll(".page-view");
+    
+    views.forEach(view => {
+        if (view.id === targetViewId) {
+            view.classList.add("active");
+        } else {
+            view.classList.remove("active");
+        }
     });
+
     window.scrollTo(0, 0);
     if (pushHistory) {
         history.pushState({ pageView: targetViewId }, "");
@@ -2557,7 +2562,7 @@ document.getElementById("resetDataBtn").addEventListener("click", () => {
     }
 });
 
-/* 6. 模态弹窗系统 */
+/* 6. ✨ 模态弹窗系统（原生平滑浮动，大厅原位静止，绝不上滑跳位） */
 const aboutModal = document.getElementById("aboutModal");
 const exitModal = document.getElementById("exitModal");
 const gameDetailModal = document.getElementById("gameDetailModal");
@@ -2565,13 +2570,11 @@ const gameDetailModal = document.getElementById("gameDetailModal");
 function showModal(modal) {
     closeDrawer(false);
     modal.classList.add("show");
-    lockPageScroll();
     history.pushState({ uiOpen: "modal" }, "");
 }
 
 function closeModal(modal, needHistoryBack = true) {
     modal.classList.remove("show");
-    unlockPageScroll();
     if (needHistoryBack && history.state && history.state.uiOpen === "modal") {
         history.back();
     }
@@ -2580,8 +2583,18 @@ function closeModal(modal, needHistoryBack = true) {
 document.getElementById("openAboutBtn").addEventListener("click", () => showModal(aboutModal));
 document.getElementById("openExitPromptBtn").addEventListener("click", () => showModal(exitModal));
 
+// 仅能点击内部打叉与取消按钮关闭
 document.querySelectorAll(".close-modal-btn").forEach(btn => {
     btn.addEventListener("click", () => closeModal(btn.closest(".modal-mask"), true));
+});
+
+// 遮罩防穿透
+document.querySelectorAll('.modal-mask').forEach(mask => {
+    mask.addEventListener('touchmove', (e) => {
+        if (!e.target.closest('.modal-box')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 });
 
 window.addEventListener("popstate", () => {
@@ -2921,7 +2934,6 @@ function renderGames() {
             toggleFavorite(game.url);
         });
 
-        // ✨ 单击卡片弹出居中详情弹窗
         card.addEventListener("click", (e) => {
             if (e.target.closest(".play-btn")) return;
             openGameDetailModal(game);
@@ -2936,7 +2948,6 @@ function renderGames() {
     });
 }
 
-// ✨ 打开居中游戏专属详情弹窗（经典放大聚焦动效 + 自适应标题）
 function openGameDetailModal(game) {
     selectedGameForDetail = game;
     const isImgIcon = game.icon.includes(".") || game.icon.includes("/");
@@ -2947,7 +2958,6 @@ function openGameDetailModal(game) {
         iconContainer.textContent = game.icon;
     }
 
-    // 智能自适应字号
     const titleEl = document.getElementById("modalGameTitle");
     titleEl.textContent = game.title;
     const len = game.title.length;
