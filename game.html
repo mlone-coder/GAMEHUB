@@ -1,24 +1,1541 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-    <meta charset="UTF-8">
-    <!-- 1. 游戏标题（会自动显示在卡片上） -->
-    <title>经典贪吃蛇</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>崔伞节奏挑战 | SAN RHYTHM</title>
+  <meta name="description" content="跟随音乐节奏击打音符，挑战你的反应速度！">
+  <meta name="category" content="arcade">
+  <meta name="icon" content="🎵">
+  <meta name="theme-color" content="#090510">
+  
+  <style>
+    :root {
+      --bg: #090510;
+      --panel: rgba(22, 13, 36, .92);
+      --purple: #bd68ff;
+      --pink: #ff4fc8;
+      --blue: #62caff;
+      --text: #fff;
+      --muted: #aaa0bd;
+    }
 
-    <!-- 2. 游戏介绍（会自动显示在卡片上） -->
-    <meta name="description" content="控制小蛇穿梭吞噬能量点，避免撞墙与咬到尾巴。">
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-    <!-- 3. 游戏类型：填 arcade(休闲街机) 或 puzzle(经典益智) 或 reflex(反应挑战) -->
-    <meta name="category" content="arcade">
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 0%, #32134c 0%, transparent 55%), var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
 
-    <!-- 4. 专属 Emoji 图标 -->
-    <meta name="icon" content="🐍">
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:focus-visible {
+      outline: 2px solid white;
+      outline-offset: 3px;
+    }
+
+    #app {
+      width: 100%;
+      height: 100dvh;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 启动预加载旋转屏幕 */
+    #loaderOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: #090510;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      transition: opacity .4s ease, visibility .4s ease;
+    }
+
+    #loaderOverlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .spinner-box {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .spinner-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 3px solid rgba(189, 104, 255, 0.15);
+      border-top-color: var(--pink);
+      border-right-color: var(--purple);
+      animation: spin 0.85s linear infinite;
+      box-shadow: 0 0 25px rgba(189, 104, 255, 0.35);
+    }
+
+    .spinner-core {
+      font-size: 26px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+
+    .loader-title {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #fff;
+    }
+
+    .loader-status {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #d1bde8;
+      max-width: 320px;
+      line-height: 1.6;
+    }
+
+    .loader-error-actions {
+      margin-top: 20px;
+      display: none;
+      gap: 10px;
+      width: min(100%, 200px);
+      flex-direction: column;
+    }
+
+    .ambient {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .32;
+      background-image: 
+        linear-gradient(rgba(189, 104, 255, .08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(189, 104, 255, .08) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: linear-gradient(to bottom, black, transparent);
+    }
+
+    header {
+      position: relative;
+      z-index: 2;
+      padding: 12px 16px 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #fff, var(--pink), var(--purple));
+      color: transparent;
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .small-btn {
+      color: white;
+      border: 1px solid #604079;
+      background: #1b1029;
+      padding: 8px 12px;
+      border-radius: 12px;
+    }
+
+    #desktopHint {
+      text-align: center;
+      font-size: 12px;
+      color: #d2b2f3;
+      padding: 4px 8px 8px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .stats {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      padding: 0 12px 10px;
+    }
+
+    .stat {
+      min-width: 0;
+      padding: 9px 5px;
+      text-align: center;
+      border: 1px solid rgba(189, 104, 255, .2);
+      background: rgba(24, 14, 39, .75);
+      border-radius: 13px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    .stat-value {
+      margin-top: 3px;
+      font-size: clamp(14px, 4vw, 22px);
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #combo {
+      color: var(--pink);
+    }
+
+    .game-area {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      padding: 0 12px;
+    }
+
+    #stage {
+      position: relative;
+      width: min(100%, 540px);
+      height: 100%;
+      min-height: 180px;
+      overflow: hidden;
+      border: 1px solid rgba(189, 104, 255, .35);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(22, 11, 36, .82), rgba(8, 5, 18, .97));
+      box-shadow: 0 0 35px rgba(148, 53, 255, .1);
+      touch-action: pan-y;
+    }
+
+    #videoBackground {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .28;
+      pointer-events: none;
+      transform: translateZ(0);
+      will-change: transform;
+    }
+
+    #videoShade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(9, 5, 16, .2), rgba(9, 5, 16, .85));
+      pointer-events: none;
+    }
+
+    .lanes {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .lane {
+      position: relative;
+      border-right: 1px solid rgba(189, 104, 255, .15);
+    }
+
+    .lane:last-child {
+      border-right: none;
+    }
+
+    .lane:nth-child(odd) {
+      background: rgba(189, 104, 255, .035);
+    }
+
+    .note {
+      position: absolute;
+      left: 10%;
+      width: 80%;
+      height: 14px;
+      border-radius: 7px;
+      box-shadow: 0 0 14px currentColor;
+      background: currentColor;
+      transform: translateY(-50%) translateZ(0);
+      pointer-events: none;
+      will-change: top;
+    }
+
+    .note::after {
+      content: "";
+      position: absolute;
+      inset: 2px 6px;
+      background: rgba(255, 255, 255, .8);
+      border-radius: 4px;
+    }
+
+    .lane:nth-child(1) .note { color: #ff58c7; }
+    .lane:nth-child(2) .note { color: #a875ff; }
+    .lane:nth-child(3) .note { color: #55cfff; }
+    .lane:nth-child(4) .note { color: #ff8a55; }
+
+    /* 判定横线精准匹配 81% */
+    .hit-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 81%;
+      height: 3px;
+      background: #ffffff;
+      box-shadow: 0 0 12px var(--pink), 0 0 25px var(--purple);
+      z-index: 2;
+      pointer-events: none;
+      transform: translateY(-50%);
+    }
+
+    .hit-line::before,
+    .hit-line::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--pink);
+    }
+
+    .hit-line::before { top: -5px; }
+    .hit-line::after { bottom: -5px; }
+
+    .lane-controls {
+      position: absolute;
+      top: 81%;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      min-height: 48px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      z-index: 4;
+    }
+
+    .lane-key {
+      border: 0;
+      border-right: 1px solid rgba(255, 255, 255, .13);
+      background: rgba(189, 104, 255, .08);
+      color: white;
+      font-size: 19px;
+      font-weight: 900;
+      transition: background .08s, transform .08s;
+      user-select: none;
+    }
+
+    .lane-key:last-child {
+      border-right: none;
+    }
+
+    .lane-key:active,
+    .lane-key.pressed {
+      background: rgba(255, 79, 200, .45);
+      transform: scale(.97);
+    }
+
+    #feedback {
+      position: absolute;
+      top: 28%;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: clamp(22px, 7vw, 34px);
+      font-weight: 1000;
+      font-style: italic;
+      text-shadow: 0 0 18px currentColor;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 5;
+    }
+
+    #feedback.show {
+      animation: feedback .55s ease-out forwards;
+    }
+
+    @keyframes feedback {
+      0% { opacity: 0; transform: scale(.65); }
+      25% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0; transform: scale(1); }
+    }
+
+    #centerMessage {
+      position: absolute;
+      z-index: 6;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      pointer-events: none;
+    }
+
+    #centerMessage h2 {
+      font-size: clamp(24px, 7vw, 38px);
+      margin: 0 0 8px;
+      text-shadow: 0 0 20px var(--purple);
+    }
+
+    #centerMessage p {
+      color: #c9b9dd;
+      font-size: 13px;
+      line-height: 1.7;
+      max-width: 300px;
+    }
+
+    .bottom-bar {
+      position: relative;
+      z-index: 2;
+      width: min(100%, 564px);
+      align-self: center;
+      padding: 10px 14px max(12px, env(safe-area-inset-bottom));
+    }
+
+    .track-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 7px;
+      font-size: 12px;
+      color: #d9c6eb;
+    }
+
+    #songTime {
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--pink);
+      cursor: pointer;
+    }
+
+    #seek {
+      display: block;
+      margin: 0 0 9px;
+      height: 4px;
+    }
+
+    .bottom-controls {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      border-radius: 12px;
+      padding: 11px 14px;
+      border: 1px solid #67428c;
+      color: white;
+      background: #211331;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .primary-btn {
+      background: linear-gradient(100deg, #8e3cdb, #d443b8);
+      border-color: transparent;
+      box-shadow: 0 5px 20px rgba(189, 104, 255, .18);
+    }
+
+    .primary-btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .overlay {
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(5, 2, 12, .78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .overlay.show {
+      display: flex;
+      animation: fadeIn .2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal {
+      width: min(100%, 440px);
+      max-height: 88dvh;
+      overflow: auto;
+      padding: 24px;
+      border-radius: 22px;
+      background: linear-gradient(150deg, #241338, #100a1c);
+      border: 1px solid rgba(189, 104, 255, .45);
+      box-shadow: 0 0 50px rgba(143, 59, 224, .18);
+      animation: modalIn .28s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    @keyframes modalIn {
+      from {
+        transform: translateY(15px) scale(.96);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .modal h2 {
+      margin: 0 0 12px;
+      font-size: 25px;
+    }
+
+    .modal p,
+    .modal li {
+      color: #d0c2df;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .modal ul {
+      padding-left: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-top: 20px;
+    }
+
+    .modal-actions button {
+      width: 100%;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 18px 0;
+      color: #e4d7f0;
+      font-size: 14px;
+    }
+
+    .setting-row input[type="range"] {
+      max-width: 155px;
+    }
+
+    .confirm-text {
+      border: 1px solid rgba(255, 79, 200, .25);
+      background: rgba(255, 79, 200, .07);
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .danger-btn {
+      background: linear-gradient(100deg, #aa255e, #d54a72);
+      border-color: transparent;
+    }
+
+    @media (pointer: coarse) {
+      #desktopHint {
+        display: none;
+      }
+    }
+
+    @media (max-height: 600px) {
+      header { padding-top: 7px; }
+      .stats { padding-bottom: 6px; }
+      .stat { padding: 5px; }
+      .bottom-bar { padding-top: 6px; }
+      .modal { padding: 18px; }
+    }
+  </style>
 </head>
+<body>
+  <!-- 预加载界面 -->
+  <div id="loaderOverlay">
+    <div class="spinner-box" id="spinnerBox">
+      <div class="spinner-ring" id="spinnerRing"></div>
+      <div class="spinner-core" id="spinnerCore">🎵</div>
+    </div>
+    <div class="loader-title" id="loaderTitle">SAN RHYTHM</div>
+    <div class="loader-status" id="loaderStatus">正在加载音乐与舞蹈视频...</div>
+    
+    <!-- 报错时显示的退出按钮（无箭头） -->
+    <div class="loader-error-actions" id="loaderErrorActions">
+      <button class="secondary-btn" id="loaderExitBtn" type="button">返回大厅</button>
+    </div>
+  </div>
 
-<body style="background:#080b18; color:white; text-align:center; padding-top:50px;">
-    <h1>🐍 经典贪吃蛇运行中...</h1>
-    <a href="games.html" style="color:#73d7ff;">返回大厅</a>
+  <div id="app">
+    <div class="ambient"></div>
+
+    <header>
+      <div class="brand">SAN RHYTHM</div>
+      <div class="header-actions">
+        <button class="small-btn" id="musicBtn" type="button">♫ 音乐</button>
+        <button class="small-btn" id="pauseBtn" type="button">Ⅱ 暂停</button>
+      </div>
+    </header>
+
+    <div id="desktopHint">
+      电脑操作：D F J K 击打对应轨道 · ESC 暂停
+    </div>
+
+    <section class="stats" aria-label="游戏统计">
+      <div class="stat">
+        <div class="stat-label">SCORE</div>
+        <div class="stat-value" id="score">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">COMBO</div>
+        <div class="stat-value" id="combo">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">ACCURACY</div>
+        <div class="stat-value" id="accuracy">100%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">BEST</div>
+        <div class="stat-value" id="best">0</div>
+      </div>
+    </section>
+
+    <main class="game-area">
+      <div id="stage">
+        <video id="videoBackground" playsinline webkit-playsinline muted loop preload="auto"></video>
+        <div id="videoShade"></div>
+        
+        <div class="lanes" id="lanes">
+          <div class="lane" data-lane="0"></div>
+          <div class="lane" data-lane="1"></div>
+          <div class="lane" data-lane="2"></div>
+          <div class="lane" data-lane="3"></div>
+        </div>
+
+        <div class="hit-line"></div>
+        <div id="feedback"></div>
+
+        <div class="lane-controls">
+          <button class="lane-key" data-hit="0" aria-label="击打第一轨道">D</button>
+          <button class="lane-key" data-hit="1" aria-label="击打第二轨道">F</button>
+          <button class="lane-key" data-hit="2" aria-label="击打第三轨道">J</button>
+          <button class="lane-key" data-hit="3" aria-label="击打第四轨道">K</button>
+        </div>
+
+        <div id="centerMessage">
+          <h2>SAN RHYTHM</h2>
+          <p>跟随节奏 · 击打音符 · 挑战最高分</p>
+        </div>
+      </div>
+    </main>
+
+    <section class="bottom-bar">
+      <div class="track-info">
+        <span id="songLabel">SHE SO BAD · RHYTHM CHALLENGE</span>
+        <span id="songTime">00:00 / 00:00</span>
+      </div>
+      <input id="seek" type="range" min="0" max="1000" value="0" aria-label="音乐播放进度">
+      <div class="bottom-controls">
+        <button class="primary-btn" id="startBtn" type="button">▶ 开始游戏</button>
+        <button class="secondary-btn" id="restartBtn" type="button">↻ 重开</button>
+      </div>
+    </section>
+  </div>
+
+  <audio id="music" preload="auto"></audio>
+
+  <!-- 首次进入游戏须知 -->
+  <div class="overlay" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
+    <div class="modal">
+      <h2 id="noticeTitle">🎵 游戏须知</h2>
+      <ul>
+        <li><b>电脑：</b>按 D、F、J、K 击打四条轨道；按 ESC 暂停。</li>
+        <li><b>手机：</b>点击屏幕底部对应的四条轨道按钮。</li>
+        <li>音符到达白色判定横线时击打，争取 PERFECT 和更高 COMBO。</li>
+        <li>本游戏支持音乐、舞蹈视频背景、音量控制及最佳记录保存。</li>
+      </ul>
+      <p class="confirm-text">
+        <b>版权提醒：</b>音乐、视频、照片及其他素材可能受版权保护。
+        使用前请确认自己已取得所需授权。此提醒不代表素材已获授权，
+        也不免除使用者应承担的责任。
+      </p>
+      <div class="modal-actions">
+        <button class="primary-btn" id="acceptNotice" type="button">我知道了，进入游戏</button>
+        <button class="secondary-btn" id="noticeExit" type="button">返回大厅</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 暂停菜单 -->
+  <div class="overlay" id="pauseModal" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <div class="modal">
+      <h2 id="pauseTitle">Ⅱ 游戏已暂停</h2>
+      <p>休息一下，准备好后继续挑战。</p>
+      <div class="modal-actions">
+        <button class="primary-btn" id="resumeBtn" type="button">▶ 继续游戏</button>
+        <button class="secondary-btn" id="pauseRestartBtn" type="button">↻ 重新开始</button>
+        <button class="secondary-btn" id="settingsBtn" type="button">⚙ 音乐设置</button>
+        <button class="secondary-btn" id="pauseExitBtn" type="button">返回大厅</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 音乐设置 -->
+  <div class="overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal">
+      <h2 id="settingsTitle">⚙ 音乐设置</h2>
+      <label class="setting-row">
+        <span>启用音乐</span>
+        <input type="checkbox" id="musicEnabled" checked>
+      </label>
+      <label class="setting-row">
+        <span>音乐音量</span>
+        <input type="range" id="volume" min="0" max="100" value="75">
+      </label>
+      <p style="font-size:12px; color:#aaa0bd; margin:10px 0;">音频素材：she-so-bad.mp3<br>视频素材：san-dance.mp4</p>
+      <div class="modal-actions">
+        <button class="primary-btn" id="saveSettings" type="button">保存设置</button>
+        <button class="secondary-btn" id="settingsBack" type="button">返回暂停菜单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 返回大厅二次确认 -->
+  <div class="overlay" id="exitModal" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
+    <div class="modal">
+      <h2 id="exitTitle">要返回游戏大厅吗？</h2>
+      <p class="confirm-text">
+        返回后本局游戏将结束，进度将不会保存。
+      </p>
+      <div class="modal-actions">
+        <button class="secondary-btn" id="cancelExit" type="button">取消，继续游戏</button>
+        <button class="primary-btn danger-btn" id="confirmExit" type="button">确认返回大厅</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结算 -->
+  <div class="overlay" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="modal">
+      <h2 id="resultTitle">🏆 挑战完成！</h2>
+      <p id="resultSummary"></p>
+      <div class="modal-actions">
+        <button class="primary-btn" id="resultRetry" type="button">再挑战一次</button>
+        <button class="secondary-btn" id="resultExit" type="button">返回大厅</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const $ = id => document.getElementById(id);
+      const music = $("music");
+      const video = $("videoBackground");
+      const stage = $("stage");
+      const lanes = [...document.querySelectorAll(".lane")];
+      const laneButtons = [...document.querySelectorAll(".lane-key")];
+      
+      const loaderOverlay = $("loaderOverlay");
+      const loaderStatus = $("loaderStatus");
+      const loaderErrorActions = $("loaderErrorActions");
+
+      const overlays = {
+        notice: $("noticeModal"),
+        pause: $("pauseModal"),
+        settings: $("settingsModal"),
+        exit: $("exitModal"),
+        result: $("resultModal")
+      };
+
+      const KEY_MAP = { d: 0, f: 1, j: 2, k: 3 };
+      const BEST_KEY = "sanRhythmBestV1";
+
+      let bestScore = readBest();
+      let score = 0;
+      let combo = 0;
+      let maxCombo = 0;
+      let totalJudged = 0;
+      let accuracyPoints = 0;
+      let notes = [];
+      let nextNoteIndex = 0;
+      let animationId = 0;
+      let gameStarted = false;
+      let paused = true;
+      let finished = false;
+      let leaving = false;
+      let settingsReturnTo = "pause";
+
+      let clockBaseTime = 0;
+      let clockAudioOffset = 0;
+      let isAudioRunning = false;
+      let lastVideoSyncTime = 0;
+
+      const SONG_LENGTH = 80;
+
+      const demoBeatmap = [];
+      for (let bar = 0; bar < 42; bar++) {
+        const base = 1.2 + bar * 1.6;
+        const pattern = [
+          { t: 0, lane: bar % 4 },
+          { t: 0.4, lane: (bar + 1) % 4 },
+          { t: 0.8, lane: (bar + 2) % 4 },
+          { t: 1.2, lane: (bar + 3) % 4 }
+        ];
+
+        pattern.forEach((n, i) => {
+          demoBeatmap.push({
+            time: base + n.t,
+            lane: n.lane,
+            id: `${bar}-${i}`,
+            hit: false,
+            judged: false,
+            element: null
+          });
+        });
+      }
+
+      const lastNoteTimestamp = demoBeatmap[demoBeatmap.length - 1].time;
+
+      /* ------------------------------------------------------------------
+       * 核心修复：立刻掐断网络连接并毫秒级瞬切大厅
+       * ------------------------------------------------------------------ */
+      function instantExitToLobby() {
+        leaving = true;
+        finished = true;
+        paused = true;
+        gameStarted = false;
+
+        // 1. 彻底清除计时器与动画
+        if (loadTimer) clearTimeout(loadTimer);
+        cancelAnimationFrame(animationId);
+
+        // 2. 核心：清空媒体源并触发 load()，强制浏览器立即中断卡顿的 HTTP 连接
+        try {
+          music.pause();
+          music.removeAttribute("src");
+          music.load();
+        } catch {}
+
+        try {
+          video.pause();
+          video.removeAttribute("src");
+          video.load();
+        } catch {}
+
+        clearNotes();
+
+        // 3. 使用 replace 进行瞬时无阻塞跳转，消除历史栈排队
+        window.location.replace("games.html");
+      }
+
+      /* ------------------------------------------------------------------
+       * 1. 资源加载与 5 秒超时中英双语报错
+       * ------------------------------------------------------------------ */
+      let audioReady = false;
+      let videoReady = false;
+      let isPreloaderFinished = false;
+      let loadTimer = null;
+
+      function checkAllLoaded() {
+        if (isPreloaderFinished || leaving) return;
+
+        if (audioReady && videoReady) {
+          if (loadTimer) clearTimeout(loadTimer);
+          loaderStatus.innerHTML = "✨ 资源加载完毕，准备进入...<br><span style='font-size:12px;color:#aaa0bd;'>Ready to play</span>";
+          setTimeout(completePreload, 400);
+        }
+      }
+
+      function completePreload() {
+        if (isPreloaderFinished || leaving) return;
+        isPreloaderFinished = true;
+        loaderOverlay.classList.add("hidden");
+        showOverlay("notice");
+      }
+
+      function handleLoadTimeout() {
+        if (isPreloaderFinished || leaving) return;
+        if (audioReady && videoReady) return;
+
+        loaderStatus.innerHTML = `
+          <div style="color: #ff4d6d; font-weight: 900; font-size: 16px; letter-spacing: 1px; margin-bottom: 4px;">
+            ERROR: 找不到对应文件
+          </div>
+          <div style="color: #ff85a1; font-size: 13px; font-weight: 700; letter-spacing: 0.5px;">
+            ERROR: File Not Found
+          </div>
+        `;
+        loaderErrorActions.style.display = "flex";
+      }
+
+      function initAssetLoader() {
+        audioReady = false;
+        videoReady = false;
+        isPreloaderFinished = false;
+
+        loaderStatus.innerHTML = "正在加载音乐与舞蹈视频...<br><span style='font-size:12px; color:#aaa0bd;'>Loading audio and video assets...</span>";
+        loaderErrorActions.style.display = "none";
+
+        if (loadTimer) clearTimeout(loadTimer);
+        loadTimer = setTimeout(handleLoadTimeout, 5000);
+
+        music.src = "assets/she-so-bad.mp3";
+        music.load();
+
+        music.oncanplay = () => {
+          audioReady = true;
+          checkAllLoaded();
+        };
+
+        music.onerror = () => {
+          if (!music.dataset.retried) {
+            music.dataset.retried = "1";
+            music.src = "she-so-bad.mp3";
+            music.load();
+          }
+        };
+
+        video.src = "assets/san-dance.mp4";
+        video.load();
+
+        video.onloadeddata = () => {
+          videoReady = true;
+          checkAllLoaded();
+        };
+
+        video.onerror = () => {
+          if (!video.dataset.retried) {
+            video.dataset.retried = "1";
+            video.src = "san-dance.mp4";
+            video.load();
+          }
+        };
+      }
+
+      // 绑定秒切大厅函数
+      $("loaderExitBtn").addEventListener("click", instantExitToLobby);
+
+      initAssetLoader();
+
+      /* ------------------------------------------------------------------
+       * 2. 毫秒级性能时钟体系
+       * ------------------------------------------------------------------ */
+      function getPreciseTime() {
+        if (!gameStarted || paused) {
+          return clockAudioOffset;
+        }
+
+        const now = performance.now();
+        let calculated = (now - clockBaseTime) / 1000;
+
+        if (isAudioRunning && Number.isFinite(music.currentTime) && !music.paused) {
+          const actual = music.currentTime;
+          if (Math.abs(calculated - actual) > 0.075) {
+            clockBaseTime = now - (actual * 1000);
+            calculated = actual;
+          }
+        }
+        return Math.max(0, calculated);
+      }
+
+      function readBest() {
+        try {
+          return Number(localStorage.getItem(BEST_KEY)) || 0;
+        } catch {
+          return 0;
+        }
+      }
+
+      function saveBest() {
+        try {
+          localStorage.setItem(BEST_KEY, String(bestScore));
+        } catch {}
+      }
+
+      function formatTime(seconds) {
+        if (!Number.isFinite(seconds)) return "00:00";
+        const s = Math.max(0, Math.floor(seconds));
+        return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+      }
+
+      function showOverlay(name) {
+        Object.values(overlays).forEach(el => el.classList.remove("show"));
+        if (overlays[name]) {
+          overlays[name].classList.add("show");
+        }
+      }
+
+      function hideOverlays() {
+        Object.values(overlays).forEach(el => el.classList.remove("show"));
+      }
+
+      function showFeedback(text, color) {
+        const el = $("feedback");
+        el.textContent = text;
+        el.style.color = color || "#fff";
+        el.classList.remove("show");
+        void el.offsetWidth;
+        el.classList.add("show");
+      }
+
+      function updateStats() {
+        $("score").textContent = score.toLocaleString();
+        $("combo").textContent = combo;
+        $("best").textContent = bestScore.toLocaleString();
+        const accuracy = totalJudged ? (accuracyPoints / totalJudged) * 100 : 100;
+        $("accuracy").textContent = `${accuracy.toFixed(1)}%`;
+      }
+
+      function clearNotes() {
+        notes.forEach(note => {
+          if (note.element) note.element.remove();
+        });
+        notes = [];
+      }
+
+      function buildNotes() {
+        clearNotes();
+        notes = demoBeatmap.map(note => ({
+          ...note,
+          hit: false,
+          judged: false,
+          element: null
+        }));
+        nextNoteIndex = 0;
+      }
+
+      function getDuration() {
+        if (Number.isFinite(music.duration) && music.duration > 0) {
+          return music.duration;
+        }
+        return Math.max(SONG_LENGTH, lastNoteTimestamp + 2);
+      }
+
+      function createNote(note) {
+        const el = document.createElement("div");
+        el.className = "note";
+        el.dataset.noteId = note.id;
+        lanes[note.lane].appendChild(el);
+        note.element = el;
+      }
+
+      function updateNotes(time) {
+        const stageHeight = stage.clientHeight;
+        const hitY = stageHeight * 0.81;
+        const travelTime = 1.6;
+
+        while (
+          nextNoteIndex < notes.length &&
+          notes[nextNoteIndex].time <= time + travelTime
+        ) {
+          createNote(notes[nextNoteIndex]);
+          nextNoteIndex++;
+        }
+
+        notes.forEach(note => {
+          if (note.judged || !note.element) return;
+          const delta = note.time - time;
+          const y = hitY - (delta / travelTime) * hitY;
+          note.element.style.top = `${y}px`;
+
+          if (delta < -0.16) {
+            judgeMiss(note);
+          }
+        });
+      }
+
+      function judgeMiss(note) {
+        if (note.judged) return;
+        note.judged = true;
+        combo = 0;
+        totalJudged++;
+        updateStats();
+
+        if (note.element) {
+          note.element.remove();
+          note.element = null;
+        }
+        showFeedback("MISS", "#ff6078");
+      }
+
+      function hitLane(lane) {
+        if (!gameStarted || paused || finished || leaving) return;
+
+        laneButtons[lane].classList.add("pressed");
+        setTimeout(() => laneButtons[lane]?.classList.remove("pressed"), 100);
+
+        const time = getPreciseTime();
+        let target = null;
+        let bestDelta = Infinity;
+
+        notes.forEach(note => {
+          if (note.judged || note.lane !== lane) return;
+          const delta = Math.abs(note.time - time);
+          if (delta < bestDelta) {
+            bestDelta = delta;
+            target = note;
+          }
+        });
+
+        if (!target || bestDelta > 0.20) {
+          showFeedback("空击", "#9b8aa8");
+          return;
+        }
+
+        target.judged = true;
+        target.hit = true;
+
+        if (target.element) {
+          target.element.remove();
+          target.element = null;
+        }
+
+        let label, points, accuracy;
+
+        if (bestDelta <= 0.065) {
+          label = "PERFECT";
+          points = 1000;
+          accuracy = 1;
+          showFeedback(label, "#ff72dc");
+        } else if (bestDelta <= 0.125) {
+          label = "GREAT";
+          points = 700;
+          accuracy = 0.75;
+          showFeedback(label, "#72d8ff");
+        } else {
+          label = "GOOD";
+          points = 400;
+          accuracy = 0.5;
+          showFeedback(label, "#d7b2ff");
+        }
+
+        combo++;
+        maxCombo = Math.max(maxCombo, combo);
+        score += points + Math.min(combo, 100) * 2;
+        totalJudged++;
+        accuracyPoints += accuracy;
+        updateStats();
+      }
+
+      function tick() {
+        if (!gameStarted || paused || finished || leaving) return;
+
+        const time = getPreciseTime();
+        updateNotes(time);
+        updateProgress(time);
+
+        const isAllNotesJudged = notes.length > 0 && notes.every(n => n.judged);
+        const isTimeOver = time >= Math.max(getDuration(), lastNoteTimestamp + 1.2);
+
+        if (isAllNotesJudged || isTimeOver) {
+          finishGame();
+          return;
+        }
+
+        animationId = requestAnimationFrame(tick);
+      }
+
+      function updateProgress(time) {
+        const duration = getDuration();
+        $("songTime").textContent = `${formatTime(time)} / ${formatTime(duration)}`;
+
+        if (!$("seek").matches(":active")) {
+          $("seek").value = String(
+            duration > 0 ? (time / duration) * 1000 : 0
+          );
+        }
+      }
+
+      function stopMedia() {
+        isAudioRunning = false;
+        try { music.pause(); } catch {}
+        try { video.pause(); } catch {}
+      }
+
+      async function playMedia(fromTime = 0) {
+        const musicEnabled = $("musicEnabled").checked;
+        music.volume = Number($("volume").value) / 100;
+        music.muted = !musicEnabled;
+
+        try {
+          if (music.readyState >= 1) {
+            music.currentTime = fromTime;
+          }
+        } catch {}
+
+        try {
+          if (musicEnabled && music.src) {
+            await music.play();
+            isAudioRunning = true;
+          }
+        } catch {
+          isAudioRunning = false;
+        }
+
+        try {
+          if (video.readyState >= 1) {
+            video.currentTime = fromTime;
+          }
+          await video.play();
+        } catch {}
+
+        clockBaseTime = performance.now() - (fromTime * 1000);
+        clockAudioOffset = fromTime;
+      }
+
+      function gentleSyncVideo(time) {
+        const now = performance.now();
+        if (now - lastVideoSyncTime < 2500) return;
+        lastVideoSyncTime = now;
+
+        if (video.readyState >= 2 && !video.paused) {
+          const diff = Math.abs(video.currentTime - time);
+          if (diff > 0.8) {
+            try {
+              video.currentTime = time % (Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 9999);
+            } catch {}
+          }
+        }
+      }
+
+      function pauseGame() {
+        if (!gameStarted || paused || finished) return;
+        paused = true;
+        clockAudioOffset = getPreciseTime();
+        cancelAnimationFrame(animationId);
+        stopMedia();
+        showOverlay("pause");
+      }
+
+      async function resumeGame() {
+        if (!gameStarted || finished || leaving) return;
+        hideOverlays();
+        paused = false;
+        await playMedia(clockAudioOffset);
+        animationId = requestAnimationFrame(tick);
+      }
+
+      async function startGame() {
+        if (gameStarted && !finished) return;
+
+        score = 0;
+        combo = 0;
+        maxCombo = 0;
+        totalJudged = 0;
+        accuracyPoints = 0;
+        finished = false;
+        leaving = false;
+        gameStarted = true;
+        paused = false;
+
+        buildNotes();
+        updateStats();
+        hideOverlays();
+
+        $("centerMessage").style.display = "none";
+        $("startBtn").textContent = "▶ 游戏进行中";
+        $("startBtn").disabled = true;
+
+        await playMedia(0);
+        animationId = requestAnimationFrame(tick);
+      }
+
+      /* ------------------------------------------------------------------
+       * 3. 重开逻辑（游戏完全重置，按钮恢复为“开始游戏”）
+       * ------------------------------------------------------------------ */
+      function restartGame() {
+        cancelAnimationFrame(animationId);
+        stopMedia();
+
+        gameStarted = false;
+        paused = true;
+        finished = false;
+        leaving = false;
+
+        clockAudioOffset = 0;
+        clockBaseTime = 0;
+
+        try { music.currentTime = 0; } catch {}
+        try { video.currentTime = 0; } catch {}
+
+        score = 0;
+        combo = 0;
+        maxCombo = 0;
+        totalJudged = 0;
+        accuracyPoints = 0;
+
+        clearNotes();
+        updateStats();
+        updateProgress(0);
+
+        hideOverlays();
+
+        $("centerMessage").style.display = "flex";
+        $("centerMessage").innerHTML = "<h2>READY?</h2><p>已重置完毕。点击下方「开始游戏」挑战最高分！</p>";
+
+        $("startBtn").textContent = "▶ 开始游戏";
+        $("startBtn").disabled = false;
+      }
+
+      function finishGame() {
+        if (finished) return;
+
+        finished = true;
+        paused = true;
+        cancelAnimationFrame(animationId);
+        stopMedia();
+        clearNotes();
+
+        if (score > bestScore) {
+          bestScore = score;
+          saveBest();
+        }
+        updateStats();
+
+        const accuracy = totalJudged ? ((accuracyPoints / totalJudged) * 100).toFixed(1) : "100.0";
+        $("resultSummary").textContent = `最终分数：${score.toLocaleString()} · ` +
+          `最高 COMBO：${maxCombo} · ` +
+          `准确率：${accuracy}%`;
+
+        $("startBtn").textContent = "▶ 开始游戏";
+        $("startBtn").disabled = false;
+        showOverlay("result");
+      }
+
+      function requestExit() {
+        if (gameStarted && !paused && !finished) {
+          pauseGame();
+        } else {
+          stopMedia();
+          cancelAnimationFrame(animationId);
+        }
+        showOverlay("exit");
+      }
+
+      function openSettings() {
+        settingsReturnTo = "pause";
+        $("musicEnabled").checked = !music.muted;
+        $("volume").value = String(Math.round(music.volume * 100));
+        showOverlay("settings");
+      }
+
+      function saveSettings() {
+        music.volume = Number($("volume").value) / 100;
+        music.muted = !$("musicEnabled").checked;
+
+        if (music.muted) {
+          music.pause();
+          isAudioRunning = false;
+        } else if (gameStarted && !paused && !finished) {
+          music.play().then(() => { isAudioRunning = true; }).catch(() => {});
+        }
+
+        if (settingsReturnTo === "pause") {
+          showOverlay("pause");
+        } else {
+          hideOverlays();
+        }
+      }
+
+      /* ------------------------------------------------------------------
+       * 4. 手机物理返回键 / 手势侧滑返回拦截
+       * ------------------------------------------------------------------ */
+      function pushHistoryState() {
+        history.pushState({ inGame: true }, "", window.location.href);
+      }
+
+      pushHistoryState();
+
+      window.addEventListener("popstate", () => {
+        if (leaving) return;
+        pushHistoryState();
+        requestExit();
+      });
+
+      /* ------------------------------------------------------------------
+       * 5. 事件绑定（全部统一使用瞬间切页函数）
+       * ------------------------------------------------------------------ */
+      $("acceptNotice").addEventListener("click", () => {
+        hideOverlays();
+        $("centerMessage").style.display = "flex";
+        $("centerMessage").innerHTML = "<h2>READY?</h2><p>点击下方「开始游戏」即可开始挑战。</p>";
+        try {
+          music.play().then(() => music.pause()).catch(() => {});
+        } catch {}
+      });
+
+      $("noticeExit").addEventListener("click", requestExit);
+
+      $("startBtn").addEventListener("click", () => {
+        if (!gameStarted || finished) {
+          startGame();
+        }
+      });
+
+      $("pauseBtn").addEventListener("click", () => {
+        if (paused && gameStarted && !finished) {
+          resumeGame();
+        } else {
+          pauseGame();
+        }
+      });
+
+      $("restartBtn").addEventListener("click", restartGame);
+      $("pauseRestartBtn").addEventListener("click", restartGame);
+      $("resultRetry").addEventListener("click", restartGame);
+
+      $("resumeBtn").addEventListener("click", resumeGame);
+      $("settingsBtn").addEventListener("click", openSettings);
+      $("saveSettings").addEventListener("click", saveSettings);
+      $("settingsBack").addEventListener("click", () => showOverlay("pause"));
+
+      $("musicBtn").addEventListener("click", () => {
+        if (music.muted) {
+          music.muted = false;
+          $("musicEnabled").checked = true;
+          $("musicBtn").textContent = "♫ 音乐";
+          if (gameStarted && !paused) {
+            music.play().then(() => { isAudioRunning = true; }).catch(() => {});
+          }
+        } else {
+          music.muted = true;
+          $("musicEnabled").checked = false;
+          $("musicBtn").textContent = "♫ 静音";
+          music.pause();
+          isAudioRunning = false;
+        }
+      });
+
+      $("pauseExitBtn").addEventListener("click", requestExit);
+      $("resultExit").addEventListener("click", requestExit);
+
+      $("cancelExit").addEventListener("click", () => {
+        if (gameStarted && !finished) {
+          showOverlay("pause");
+        } else if (finished) {
+          showOverlay("result");
+        } else {
+          showOverlay("notice");
+        }
+      });
+
+      // 弹窗确认返回大厅：直接调用秒切函数
+      $("confirmExit").addEventListener("click", instantExitToLobby);
+
+      laneButtons.forEach(button => {
+        button.addEventListener("pointerdown", event => {
+          event.preventDefault();
+          hitLane(Number(button.dataset.hit));
+        });
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.repeat) return;
+        const key = event.key.toLowerCase();
+
+        if (key === "escape") {
+          event.preventDefault();
+          if (overlays.exit.classList.contains("show")) return;
+          if (overlays.settings.classList.contains("show")) {
+            showOverlay("pause");
+          } else if (overlays.pause.classList.contains("show")) {
+            resumeGame();
+          } else {
+            pauseGame();
+          }
+          return;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(KEY_MAP, key)) {
+          event.preventDefault();
+          hitLane(KEY_MAP[key]);
+        }
+      });
+
+      $("seek").addEventListener("input", () => {
+        const duration = getDuration();
+        const target = (Number($("seek").value) / 1000) * duration;
+        clockAudioOffset = target;
+        clockBaseTime = performance.now() - (target * 1000);
+        try { music.currentTime = target; } catch {}
+        try { video.currentTime = target; } catch {}
+        updateProgress(target);
+      });
+
+      $("volume").addEventListener("input", () => {
+        music.volume = Number($("volume").value) / 100;
+      });
+
+      $("musicEnabled").addEventListener("change", () => {
+        music.muted = !$("musicEnabled").checked;
+        if (music.muted) {
+          music.pause();
+          isAudioRunning = false;
+        }
+      });
+
+      setInterval(() => {
+        if (gameStarted && !paused && !finished && !leaving) {
+          gentleSyncVideo(getPreciseTime());
+        }
+      }, 1500);
+
+      updateStats();
+      updateProgress(0);
+    })();
+  </script>
 </body>
-
 </html>
