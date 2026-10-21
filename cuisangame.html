@@ -619,15 +619,16 @@
       .bottom-bar { padding-top: 6px; }
       .modal { padding: 18px; }
     }
-    /* 禁止选中文字、长按菜单和双击选取 */
-html,
-body,
-#app {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
 
+    /* 禁止选中文字、长按菜单和双击选取 */
+    html,
+    body,
+    #app {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
   </style>
 </head>
 <body>
@@ -1601,7 +1602,7 @@ body,
           $("recDot").classList.add("paused");
           $("recStatusText").textContent = "录制已暂停 (可在此打点、加字或拖动进度)";
           $("recPauseToggleBtn").innerHTML = `${ICONS.play} 继续录制`;
-          $("pauseBtn").innerHTML = `${ICONS.play} 继续`;
+          $("pauseBtn").innerHTML = `${ICONS.pause} 继续`;
 
           $("markerTimeInput").value = formatTime(getCurrentTime());
           showFeedback("录制暂停", "#ffaa00");
@@ -1908,15 +1909,16 @@ body,
       updateStats();
       updateProgress();
     })();
-    <script>
-document.addEventListener('contextmenu', function(e) {
-  e.preventDefault();
-});
+  </script>
 
-document.addEventListener('selectstart', function(e) {
-  e.preventDefault();
-});
-</script>
+  <script>
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+
+    document.addEventListener('selectstart', function(e) {
+      e.preventDefault();
+    });
   </script>
 </body>
 </html>
